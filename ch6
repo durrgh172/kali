@@ -1,0 +1,257 @@
+Understanding the Boot Process
+
+Any time you modify the way that your computer boots, the possibility exists that you won’t get the results that you would expect. In these cases, it’s useful to know where you can turn for more information about what is happening during startup. The reports that you receive on a particular boot can better guide you, once you understand something about what’s supposed to happen when a Linux system boots.
+
+Extracting Information about the Boot Process
+
+Certain Linux kernel and module log information is stored in what is called the kernel ring buffer. By default, Linux displays messages destined for the kernel ring buffer during the boot process—they’re those messages that scroll past too quickly to read. You can inspect this information with this command:
+
+# dmesg
+
+This command generates a lot of output, so you may want to pipe it through the less pager or redirect it to a file. Here are some examples of these commands:
+
+		# dmesg | less
+
+		# dmesg > boot.messages
+
+Locating and Interpreting Boot Messages
+
+Boot messages in the kernel ring buffer or /var/log files can be cryptic to the uninitiated. Some tips can help you locate and interpret the information you find in these sources: 
+
+Use less and Its Search Functions The less pager is a great tool for examining both the kernel ring buffer and log files. The search function (accessed by pressing the slash key, /) can help you look for particular strings.
+
+Look for Hardware Type Names Many boot messages, particularly in the kernel ring buffer, relate to hardware. Try searching for the name of the hardware type, such as SCSI or USB, if you’re having problems with these subsystems. 
+
+Look for Hardware Chipset Names Linux drivers sometimes log messages along with their driver names, which are usually based on the chipset in question. If you know your hardware well enough to know the chipset name, search for it or for a subset of it. 
+
+Study the Output from a Working System Familiarize yourself with the contents of the kernel ring buffer and log files on a working system. If you know what to expect when a system is functioning correctly, you’ll find it easier to identify problems when they occur.
+
+The Boot Process
+
+The process of taking an x86 computer from its initial state when the power is turned on to having a working operating system running is complex because of the way modern personal computers have evolved. The steps a computer goes through in order to boot an operating system are as follows:
+
+1. The system is given power, and a special hardware circuit causes the CPU to look at a predetermined address and execute the code stored in that location. The firmware (BIOS(basic input/output system )or EFI(Unified Extensible Firmware Interface)) resides at this location, so the CPU runs the firmware.
+
+2. The firmware performs some tasks. These include checking for hardware, configuring hardware, and looking for a boot loader.
+
+3. When the boot loader takes over from the firmware, it loads a kernel or chain loads to another boot loader.
+
+4. Once the Linux kernel takes over, it performs tasks such as initializing devices, mounting the root partition, and finally loading and executing the initial program for your system. By default, this is the program /sbin/init. It gets the process ID (PID) of 1,because it’s the first program to run on the system. 
+
+The Initialization Process
+
+A Linux system comprises lots of programs running in the background to provide services for the system. It’s the init program’s job to start all of those programs when the Linux system starts up. This is called the initialization process. You must configure the initialization process to start programs based on the desired features that you want running in your Linux system. For example, a Linux server doesn’t necessarily need to start a graphical desktop environment, or a Linux desktop doesn’t necessarily need to start the Apache web server service.
+
+There are currently three popular initialization process methods used in Linux distributions:
+
+■ Unix System V (also called SysV)
+■ systemd
+■ Upstart
+
+The original Linux init program was based on the Unix System V init program, and it became commonly called SysV. The SysV init program uses a series of shell scripts, divided into separate runlevels, to determine what programs run at what times.
+
+The Upstart version of the init program was developed as part of the Ubuntu Linux distribution. Its main goal was to handle the dynamic environment that hotplug devices cause in Linux. The Upstart method uses separate configuration files for each service, and each service configuration file sets the run level in which the service should start.
+
+		The systemd program was developed by the Red Hat Linux distribution to handle dynamic Linux 			environments as well.
+
+
+
+
+Using the SysV Initialization Process
+
+The key to the SysV initialization process is runlevels. The init program determines what services to start based on the runlevel of the system. Runlevels are numbered from 0 to 6, and each one is assigned a set of services that should be active for that runlevel. Upon booting, Linux enters a predetermined runlevel, which you can set. Knowing what these functions are, and how to manage runlevels, is important if you’re to control the Linux boot process and ongoing operations. 
+
+Runlevel Functions
+
+Earlier in this chapter, we described single-user mode. To get to this mode when booting Linux, you use 1, S or s, or single as an option passed to the kernel by the boot loader. Single-user mode is simply an available runlevel for your system. The available runlevels on most systems are the numbers 0 through 6. The S and s are synonymous with runlevel 1 as far as many utilities are concerned.
+
+
+Identifying the Services in a Runlevel
+
+There are two main ways to affect what programs run when you enter a new SysV runlevel. The first is to add or delete entries in your /etc/inittab file. A typical /etc/inittab file contains many entries, and except for a couple of special cases, inspecting or changing the contents of this file is best left to experts. Once all of the entries in /etc/inittab for your runlevel are executed, your boot process is complete and you can log in.
+
+Basics of the /etc/inittab File
+
+Entries in /etc/inittab follow a simple format. Each line consists of four colon delimited fields:
+
+id:runlevels:action:process
+
+
+
+Each of these fields has a specific meaning:
+
+Identification Code The id field consists of a sequence of one to four characters that identifies its function. 
+
+Applicable Runlevels The runlevels field consists of a list of runlevels for which this entry applies. For instance, 345 means the entry is applicable to runlevels 3, 4, and 5. 
+
+Action to Be Taken Specific codes in the action field tell init how to treat the process. For instance, wait tells init to start the process once when entering a runlevel and to wait for the process’s termination, and respawn tells init to restart the process whenever it terminates (which is great for login processes). Several other actions are available; consult the man page for inittab for details.
+ 
+Process to Run The process field is the process to run for this entry, including any options and arguments that are required.
+The part of /etc/inittab that tells init how to handle each runlevel looks like this:
+
+
+Managing Runlevel Services
+
+The SysV startup scripts in the runlevel directories are symbolic links back to the original script. This is done so that you don’t need to copy the same script into each runlevel directory.  Numerous utility programs are available to help you manage these links, such as chkconfig, update-rc.d, and rc-update. These tools may provide impaired functionality on systems that don’t use SysV natively; you may need to locate Upstart- or systemd-specific tools instead. To list the services and their applicable runlevels with chkconfig, use the --list option.
+
+The output looks something like this, but it is likely to be much longer:
+
+# chkconfig –list
+
+pcmcia 0:off 1:off 2:on 3:on 4:on 5:on 6:off
+nfs-common 0:off 1:off 2:off 3:on 4:on 5:on 6:off
+xprint 0:off 1:off 2:off 3:on 4:on 5:on 6:off
+setserial 0:off 1:off 2:off 3:off 4:off 5:off 6:off
+
+If you’re interested in a specifi c service, you can specify its name:
+
+		# chkconfig --list nfs-common
+
+	nfs-common 0:off 1:off 2:off 3:on 4:on 5:on 6:off
+
+
+To modify the runlevels in which a service runs, use a command like this:
+
+# chkconfig --level 23 nfs-common on
+
+The previous example is for Debian-based systems., you can add it to these runlevels with a command like this:
+
+# chkconfig --add nfs-common
+
+This command adds the nfs-common script to those managed by chkconfig. 
+
+
+Checking Your Runlevel
+
+Sometimes it’s necessary to check your current runlevel. Typically, you’ll do this prior to changing the runlevel or to check the status if something isn’t working correctly. Two different runlevel checks are possible: checking your default runlevel and checking your current runlevel.
+
+Checking and Changing Your Default Runlevel
+
+On a SysV-based system, you can determine your default runlevel by inspecting the /etc /inittab fi le with the less command or opening it in an editor. Alternatively, you may use the grep command to look for the line specifying the initdefault action. On a Debian system, you’ll see something like this:
+
+# grep :initdefault: /etc/inittab
+
+id:2:initdefault:
+
+
+Determining Your Current Runlevel
+
+If your system is up and running, you can determine your runlevel information with the runlevel command:
+
+# runlevel
+
+N 2
+
+The first character is the previous runlevel. When the character is N, this means the system hasn’t switched runlevels since booting.
+
+A variant of init is telinit. Just like init, this program can take a runlevel number to change to that runlevel, but it can also take the Q or q option to have the tool reread /etc/inittab and implement any changes it finds there. Thus, if you’ve made a change to the runlevel in /etc/inittab, you can immediately implement that change by typing telinit q.
+
+Changing Runlevels with init or telinit
+
+The init process is the first process run by the Linux kernel, but you can also use it to have the system reread the /etc/inittab file and implement the changes it finds there or to change to a new runlevel. The simplest case is to have it change to the runlevel you specify. For instance, to change to runlevel 1 (the runlevel reserved for single-user or maintenance mode), you would type this command:
+
+# init 1
+
+To reboot the system, you can use init to change to runlevel 6 by entering:
+
+# init 6
+
+
+Changing Runlevels with shutdown
+
+Although you can shut down or reboot the computer with init, doing so has some problems. One issue is that it’s simply an unintuitive command for this action. Another is that changing runlevels with init causes an immediate change to the new runlevel.
+
+
+The shutdown program sends a message to all users who are logged into your system and prevents other users from logging in during the process of changing runlevels. The shutdown command also lets you specify when to effect the runlevel change so that users have time to exit editors and safely stop other processes that they may have running.
+
+shutdown is invoked with a time argument like this:
+
+# shutdown now      This changes the system to runlevel 1, the single-user or maintenance mode.
+
+Three additional shortcut commands are halt, reboot, and poweroff. 
+You can add extra parameters to specify that you want to reboot or halt the computer. Specifically, -r reboots the system, -H halts it, and -P powers it off. The -h option may halt or power off the computer, but usually it powers it off. For instance, you can type shutdown -r +10 to reboot the system in 10 minutes.
+To give people some warning about the impending shutdown, you can add a message to the end of the command:
+# shutdown -h +15 "system going down for maintenance"
+If you schedule a shutdown but then change your mind, you can use the -c option to cancel it:
+# ♠
+
+Using the systemd Initialization Process
+
+The systemd initialization process method is quickly gaining in popularity in the Linux world. It’s currently the default initialization process used in the Fedora, CentOS, and Red Hat Linux distributions. The systemd initialization process introduced a major paradigm shift in how Linux systems handle services, which has also caused some controversy in the Linux world. Instead of lots of small initialization shell scripts, the systemd method uses one monolithic program that uses individual configuration files for each service. 
+
+Units and Targets
+
+Instead of using shell scripts and runlevels, the systemd method uses units and targets. A systemd unit defines a service or action on the system. It consists of a name, a type, and a configuration file. There are currently eight different types of systemd units:
+
+■ automount	■ device	■ mount	■ path	■ service	■ snapshot	■ socket	■ target
+
+The systemd program identifies units by their name and type using the format name .type. You use the systemctl command to list the units currently loaded in your Linux system:
+
+		# systemctl list-units
+
+Configuring Units
+
+Each unit requires a configuration file that defines what program it starts and how it should start the program. The systemd system stores unit configuration files in the /lib/system /system folder.
+
+Here’s an example of the sshd.service unit configuration file used in Fedora 20:
+
+# cat sshd.service
+# cat graphical.target
+
+Setting the Default Target
+
+The default target used when the Linux system boots is defined in the /etc/systemd/system folder as the file default.target. This is the file the systemd program looks for when it starts up. This file is normally set as a link to a standard target file in the /lib/system /system folder:
+
+# ls -al default.target
+
+The systemctl Program
+
+In the systemd method, you use the systemctl program to control services and targets. The systemctl program uses options to define what action to take, as shown below:
+# systemctl stop sshd.service
+# systemctl status sshd.service
+
+# systemctl start sshd.service
+# systemctl status sshd.service
+
+To change the target that is currently running, you must use the isolate command. For example, to enter single-user mode you’d use:
+
+# systemctl isolate rescue.target
+
+To go back to the default target for the system, you just use the default command.
+
+Editing Files with vi
+
+vi was the first full-screen text editor written for Unix. It’s designed to be small and simple, and it is often the only editor installed in emergency boot systems. For this reason alone, vi is worth learning; you may need to use it in an emergency recovery situation. Vi is, however, a bit strange, particularly if you’re used to GUI text editors. To use vi, you should first understand the three modes in which it operates. 
+
+
+Understanding vi Modes
+
+At any given moment, vi is running in one of three modes:
+
+Command Mode (Normal Mode)  This mode accepts commands, which are usually entered as single letters. For instance, i and a both enter insert mode, although in somewhat different ways, as described shortly, and o opens a line below the current one. 
+
+Ex Mode ( Colen Mode)  To manipulate files (including saving your current file and running outside programs), you use ex mode. You enter ex mode from command mode by typing a colon (:), typically directly followed by the name of the ex-mode command you want to use. After you run the ex-mode command, vi returns automatically to command mode.
+
+Insert Mode (Entry Mode) You enter text in insert mode. Most keystrokes result in text appearing on the screen. One important exception is the Esc key, which exits insert mode and returns to command mode.
+
+
+Exploring Basic Text-Editing Procedures & Saving Changes
+
+To create or open a file using 
+ 
+#vi filename.filetype
+
+#vi sample.txt
+
+Although vi supports many complex editing operations and numerous commands, you can accomplish work by using a few basic commands. These basic vi commands are
+
+Cursor movement—h, j, k, l (left, down, up, and right)
+Delete character—x
+Delete line—dd
+Mode toggle—Esc, Insert (or i), Append (or a)
+Quit—:q
+Quit without saving—:q!
+Run a shell command—:sh (use 'exit' to return)
+Save file—:w
+Save file and quit—:wq
+Text search—/

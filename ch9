@@ -1,0 +1,340 @@
+Maintaining the System Time
+
+Linux depends on its system clock. Tools such as cron and at run programs at specified times,make development tool uses file’s time stamps to determine which ones need attention, and so on. Therefore, you should be familiar with how Linux deals with time, how to change the time zone, how to set the time, and how to keep the clock accurate.
+Understanding Linux Time Concepts
+
+The x86 and x86-64 computers that most often run Linux, as well as most other computers of this general class, have two built-in clocks. The first of these clocks, sometimes called the hardware clock, maintains the time while the computer is turned off. When you boot Linux, it reads the hardware clock and sets the software clock to the value it retrieves. The software clock is what Linux uses for most purposes while it’s running. Some OSs set their clocks to the local time. This approach is simple and convenient for people who are used to dealing mainly with local time, but for purposes of networking, it’s inadequate. 
+
+Understanding Linux Time Concepts
+Linux sets its clock to Coordinated Universal Time (UTC). For most purposes, UTC is identical to Greenwich mean time (GMT). GMT is the time in Greenwich, England, unadjusted for daylight savings time, and is maintained by a series of atomic clocks stationed around the world. This approach means that Linux systems in New York and Los Angeles (and London and Moscow and Tokyo) should have identical UTC times, assuming all are set correctly. For communicating with users, though, these systems need to know their time zones. All of this means that you must be able to set the computer’s time zone. On most systems, this is done at system installation. The distribution’s installer asks you for your time zone and sets things up correctly. The hardware clock depends on battery power and tends to drift. The software clock, after being updated to the hardware clock’s time at boot, is maintained in software. To deal with this problem, Linux supports various network protocols for setting the time. The most popular of these is the Network Time Protocol (NTP), which is described in the upcoming section “Using Network Time Protocol.”
+
+Manually Setting the Time
+
+You can manually set your system’s clocks. As stated earlier, Linux maintains two clocks: the hardware clock and the software clock. The main tool to set the software clock is date, which has the following syntax when setting the clock:
+
+					date [-u|--utc|--universal] [MMDDhhmm[[CC]YY][.ss]]
+
+Used without any options, this command displays the current date and time. If you pass a time to the date command, it sets the software clock to that time. This format contains a month, a day, an hour, and a minute at a minimum, all in two-digit codes (MMDDhhmm). You can optionally add a two- or four-digit year and the seconds within a minute if you like. You should specify the time in a 24-hour format. For instance, to set the time to 3:02 p.m. on October 27, 2016, you’d type the following command:
+					
+					# date 102715022016
+
+Because x86 and x86-64 hardware maintains both software and hardware clocks, Linux provides tools to synchronize the two. Specifically, the hwclock utility lets you set the hardware clock from the software clock, or vice versa, as well as to do a few other things. Its syntax is fairly straightforward:
+
+					hwclock [options]
+
+
+You can specify options to accomplish several goals: 
+
+Show the Hardware Clock To view the hardware clock, pass the -r or --show option. The time is displayed in local time, even if the hardware clock is set to UTC. 
+
+Set the Hardware Clock Manually To set the hardware clock to a date you specify, you need two options: --set and --date=newdate. The newdate option is in the date format that the date program accepts. 
+
+Set the Hardware Clock Based on the Software Clock If you’ve set the software clock, you can synchronize the hardware clock to the same value with the --systohc option. 
+
+Set the Software Clock Based on the Hardware Clock If your hardware clock is accurate but your software clock is not, you can use the --hctosys option to set the software clock to the hardware clock’s value. This option is often used in a SysV startup script to set the system clock when the computer first boots.
+
+Specify UTC or Local Time You can tell Linux to treat the hardware clock as storing UTC by using the --utc option or to treat it as holding local time by using the –localtime option. The default is whichever was last used when the hardware clock was set. 
+
+Ordinarily, you won’t use hwclock directly very often. You may need to use it after a daylight savings time shift if you maintain your hardware clock in local time, but most distributions include scripts that manage this task automatically. You may also want to use it once in a while to keep the hardware clock from drifting too far from an accurate time; but again, many distributions do this automatically as part of the system shutdown procedure.
+
+Using Network Time Protocol
+
+NTP stands for National Time Protocol and is used for clock synchronization across multiple computers. An NTP server is responsible for keeping a set of computers in sync with each other. On a local network, the server should be able to keep all client systems to within a single millisecond of each other.
+
+Install NTP server
+
+To begin, we need to install NTP server. You can do so by opening a terminal and entering the following command:
+
+					$ sudo apt install ntp
+
+Configure NTP server
+
+The NTP server comes pre-configured with some server pools already, which you can see inside the /etc/ntp.conf file.
+
+$ cat /etc/ntp.conf
+
+Generally, it's best to replace these lines with server pools from your own country, or at least your own continent. The less latency between you and a time server, the better. You can use the NTP Pool Project website to find the closest NTP server pool to your location.
+Once you find the most relevant zone, all you need to do is add the lines in your config file by using nano or your preferred text editor:
+
+		$ sudo nano /etc/ntp.conf
+Once you've made these changes, save and exit the configuration file. Restart the NTP service for the changes to take effect:
+
+		$ sudo systemctl restart ntp
+
+Check on the status of the NTP service at any time with this command:
+
+		$ sudo systemctl status ntp
+
+NTP client configuration
+
+Now that we have an NTP se rver up and running, we will show how client systems can connect to it for time synchronization. Just follow the steps below on your client systems:
+
+Step 1: First, we need to install the ntpdate package. We can use this to verify connectivity between the client and the NTP time server we created.   		$ sudo apt install ntpdate
+
+Step 2: Next, let's attempt to mantually sync our system time with the NTP server. Type the following command, substituting your NTP server's IP address or hostname where appropriate: 			$ sudo ntpdate 192.168.1.55
+														Connection to NTP server is successful
+
+Step 3: That seems to be working as we'd expect. Next, be sure to disable Ubuntu's default timesyncd service, as this will conflict with our attempts to synchronize with the NTP server.				$ sudo timedatectl set-ntp off
+
+Step 4: Now, we need to install the NTP daemon on our client system so we can configure it to pull the time from our NTP server that we set up earlier.										$ sudo apt install ntp
+
+Step 5: We only need to add a single line to our ntp.conf file, and we can do that very easily with a single command. Just make sure to replace the IP address below with either the hostname or the IP address of your NTP server.
+				$ sudo bash -c "echo server 192.168.1.55 prefer iburst >> /etc/ntp.conf" 
+
+Step 6: Then, restart the NTP daemon:
+				$ sudo systemctl restart ntp
+
+Step 7: Lastly, use the ntpq command to list the NTP time synchronization queue:
+				$ ntpq -p
+
+Using Log and Journal Files
+
+Linux maintains log files that record various key details about system operation. These log files are typically stored in the /var/log directory. You can begin reviewing /var/log files immediately. However, it is important to know how to change the log file configuration. You do this by configuring the syslogd daemon. There are several issues to consider when configuring and reviewing log files. Some servers and other programs perform their own logging and must be configured independently of syslogd. You may want to configure one computer to send its log files to another system as a security measure. You should be aware of issues surrounding log file rotation. If your computer doesn’t properly manage existing log files, they can grow to consume all of your available disk space, at least on the partition on which they’re stored. Many distributions are switching to the systemd utilities, including using the journal fi le. Journal fi les present a very different way of recording and reporting on a system’s operation details. The daemon for journaling is systemd-journald, and understanding how to configure it is important for proper journal file management.
+
+
+Understanding syslogd
+
+Most Linux systems employ a special daemon to handle log maintenance in a unified way. The traditional Linux daemon log manager is syslogd, which is often installed from a package called sysklogd. The syslogd daemon handles messages from servers and other user-mode programs. It’s usually paired with a daemon called klogd, which is generally installed from the same software package as syslogd. The klogd daemon manages logging of kernel messages.
+
+The basic idea behind a system logger is to provide a unified means of handling log files. The daemon runs in the background and accepts data delivered from servers and other programs that are configured to use the log daemon. The daemon can then use information provided by the server to classify the messages and direct them to an appropriate log file. This configuration enables you to consolidate messages from various servers into a handful of standard log files. The arrangement can be much easier to use and manage than potentially dozens of log files from the various servers running on the system. In order to work, of course, the log daemon must be configured. In the case of syslogd, this is done through the /etc/syslog.conf file. 
+
+Setting Logging Options
+
+The format of the /etc/syslog.conf file is conceptually simple, but it provides a great deal of power. Comment lines, as in many Linux configuration files, are denoted by a hash mark (#). Non-comment lines take the following form: facility.priority action
+
+In this line, the facility parameter is the type of program or tool that generated the message to be logged. The priority is the parameter for the importance of this message. The action is a file, remote computer, or other location that’s to accept the message. The facility and priority are often referred to collectively as the selector. Valid parameters for the facility are as follows:
+
+authpriv 				- Security and authorization messages
+cron 					- cron daemon messages
+daemon 				- Various system daemon messages
+kern 					- Kernel messages
+lpr 					- Printing system messages
+mail 					- Mail system messages
+news 				- News daemon messages
+syslog 				- Internally generated syslog messages
+user 					- User-level messages
+uucp 				- Unix-to-Unix copy program (uucp) daemon messages
+local0 through local7 	- Locally defined application messages
+
+Many of these names refer to specific servers or program classes. For instance, mail servers and other mail-processing tools typically log messages using the mail facility. Most servers that aren’t covered by more specific parameters use the daemon facility.
+
+
+For the facility parameter in the /etc/syslog.conf file, an asterisk (*) refers to all facilities. You can specify multiple facilities in one selector by separating the facility names with commas (,). Valid parameters for priority are as follows:
+
+debug 			- Debugging level messages for application development (least important)
+info 				- Normal operation messages
+notice 			- Abnormal messages that are not a concern
+warning 			- Messages that indicate an error will occur if action is not taken
+err 				- Non-urgent failure and error messages
+crit 				- Urgent failure and error messages concerning secondary systems
+alert 			- Urgent failure and error messages concerning primary systems
+emerg 			- Panic messages indicating system is unusable (most important)
+
+These priorities represent ascending levels of importance. The debug level logs, as the name implies, messages for debugging programs that are misbehaving. The crit, alert, and emerg priorities log the most important messages, which indicate very serious problems.
+
+When a program sends a message to the system logger, it includes a priority parameter; the logger logs the message to a file if you’ve configured it to log messages of that level or higher. Thus, if you specify a priority code of alert, the system will log messages that are classified as alert or emerg but not messages of crit or below.
+
+An exception to this rule is if you precede the priority parameter by an equal sign (=), as in =crit, which describes what to do with messages of crit priority only. An exclamation mark (!) reverses the meaning of a match. For instance, !crit causes messages below crit priority to be logged. 
+
+A priority of * refers to all priorities. You can specify multiple selectors for a single action by separating the selectors with
+a semicolon (;). Note that commas are used to separate multiple facilities within a single selector, whereas semicolons are used to separate multiple selectors as a whole. Examples of complete selectors appear shortly. Most commonly, the action parameter is a filename, typically in the /var/log directory tree. The messages, syslog, and secure fi les in this directory are three common and important log files, although not all distributions use all of these files. 
+
+Another possible logging location includes a remote machine name preceded by an at sign (@) to log data to the specified system. You can also have a username list of individuals who should see the message, if they’re logged in. For this last option, an asterisk (*) means all logged-in users. Some examples should help clarify these rules. The first is a fairly ordinary and simple entry:
+
+mail.* /var/log/mail
+
+This line sends all log entries identified by the originating program as related to mail to the /var/log/mail fi le. Most of the entries in a default /etc/syslog.conf fi le resemble this one. Together, they typically cover all of the facilities mentioned earlier.
+Some messages may be handled by multiple rules. For instance, another rule might look like this one: *.emerg
+
+This line sends all emerg-level messages to all users who are logged into the computer using text-mode tools. If this line and the earlier mail.* selector are both present, emerg-level messages related to mail will be logged to /var/log/mail and displayed on users’ terminals. A more complex example logs kernel messages in various ways, depending on their priorities:
+
+kern.* /var/log/kernel
+kern.crit @logger.pangaea.edu
+kern.info;kern.!err /var/log/kernel-info
+The first of these rules logs all kernel messages to /var/log/kernel. The second line sends critical kernel messages to logger.pangaea.edu. (This computer must be configured to accept remote logs, which is a topic not covered in this book.)
+Finally, the last line sends kernel messages that are between info and err in priority to /var/log/kernel-info. Because err is the priority immediately above crit, and because info is the lowest priority, these four lines cause all kernel messages to be logged two or three times: once to /var/log/kernel as well as either to the remote system and the console or to /var/log/kernel-info.
+
+Manually Logging Data
+
+For the most part, the system logger accepts log entries from system tools, such as servers. Occasionally, though, you may want to create a log entry manually or have a script do so. The tool for this job is known as logger, and it has the following syntax:
+
+logger [-isd] [-f file] [-p pri] [-t tag] [-u socket] [message ...]
+
+Options to logger permit changing its default function:
+
+- Record logger PID The -i option records the process ID (PID) of the logger process along with other data.
+- Output to Standard Error You can echo data to standard error as well as to the log file by using the -s option. An interactive 	script might use this feature to alert users to problems.
+- Log Using Datagrams The -d option causes logger to use datagrams rather than a stream connection to the system logger socket. 	This is an advanced feature that you should use only if you’re instructed to do so in documentation or if you understand the 	networking issues involved.
+- Log a File You can log the contents of a file by using the -f file option. Be cautious with this option; if file is big, your system log 	file can grow to a ridiculous size!
+- Identify a Priority The -p priority option specifies a priority, as described earlier.
+- Log Tags You can add a tag with the -t tag option. This is useful if you want to identify a script or other program that created the 	log entry.
+- Specify a Socket Ordinarily, logger calls the default system log tools to do its job. You can log directly to a network socket using 	the -u socket option if you prefer.
+- Specify a Message If you don’t specify a file using -f file, logger will log whatever you type after other options as the message 	to be logged. If you don’t provide a message on the command line, logger accepts the input you type on subsequent lines as 	information to be logged. You should terminate such input by pressing Ctrl+D.
+
+As an example, suppose you want to log the message “shutting down for system maintenance” to the system log. You can do so by typing the following command:
+
+$ logger shutting down for system maintenance
+
+The result will be an entry like the following, probably in /var/log/messages:
+Jul 29 14:09:50 localhost root: shutting down for system maintenance 
+
+Adding parameters changes the details of what’s logged as just described. You can place a call to logger in a script as a way of documenting the script’s activities. For instance, a system backup script might use logger to record details such as its start and stop times and the number and size of the fi les that it has backed up.
+
+Rotating Log Files
+Log files are intended to retain information about system activities for a reasonable period of time, but system logging daemons provide no means to control the size of log files. Left unchecked, log files can therefore grow to consume all of the available partition space on which they reside. To avoid this problem, Linux employs log file rotation tools. These tools rename and optionally compress the current log files, delete old log files, and force the logging system to begin using new log files. The most common log rotation tool is a package called logrotate. This program is typically called on a regular basis via a cron job. The logrotate program consults a configuration file called /etc/logrotate.conf, which includes several default settings and typically refers to files in /etc/logrotate.d to handle specifi c log fi les. A typical /etc/logrotate. conf file includes several comment lines, denoted by hash marks (#), as well as lines to set various options, as illustrated in the following:
+
+Reviewing Log File Contents
+
+Log files do no good if they simply accumulate on the system. They are to be used as a means of identifying problems or documenting normal activity. For example, when a server isn’t responding as you expect, you should check your log fi les as part of your troubleshooting procedures.
+
+Log files can be useful in less troublesome situations as well, such as helping you to identify a server’s load so as to plan upgrades. Several procedures, many of which involve tools described elsewhere in this book, can help you access your log files: Paging through Whole Log Files You can use a pager program, such as less (see Chapter 1), to view the entire contents of a log file. A text editor can fill the same role.
+
+Searching for Keywords You can use grep (see Chapter 1) to pull lines out of log files that contain keywords. This can be particularly handy when you don’t know which log file is likely to hold an entry. For instance, typing grep eth0 /var/log/* locates all lines in all files in the /var/log directory that contain the string eth0.
+
+Examining the Start or End of a File You can use the head or tail command (see Chapter 1) to examine the fi rst or last lines of a log fi le. The tail command is particularly handy; you can use it to look at the last few records right after you take some action that
+you would expect to produce some diagnostic log file entries. Monitoring Log Files In addition to checking the last few lines of a log file, tail can monitor a fi le on an ongoing basis, echoing lines to the screen as they’re added to the file.
+
+You do this with the -f option to tail, as in tail -f /var/log/messages.
+
+Overall, you should probably examine your log fi les from time to time to become familiar with their contents. This will help you spot abnormalities when the system begins misbehaving or when you want to use log fi les to help track down an unwelcome visitor.
+
+Managing Email
+
+Email is an important network service. Linux relies on email even in a completely non-networked environment. Certain Linux subsystems, such as cron, may use email to notify you of activities. For this reason, most Linux distributions ship with email server software installed and configured for basic activities. You should understand the basics of email and be able to identify the specific email server package your system is running.
+
+Understanding Email
+
+Several protocols exist to manage email. The most common of these is the Simple Mail Transfer Protocol (SMTP), which is designed as a push mail protocol, meaning that the sending system initiates the transfer. This design is good for sending data, so SMTP is used through most of a mail delivery system. The final stage, though, often employs a pull mail protocol, such as the Post Office Protocol (POP) or the Internet Message Access Protocol (IMAP). With these protocols, the receiving system initiates the transfer. This is useful when the receiving system is an end user’s workstation, which may not be powered on at all times or able to receive incoming connections. 
+
+SMTP was designed to enable a message to be relayed through an arbitrary number of computers. For instance, an end user may compose a message, which is sent to the local SMTP server. SMTP servers are also known as Mail Transfer Agents (MTAs). The MTA
+looks up a recipient system and sends the message to that computer. This system may use its own internal routing table to redirect the message to another local computer from which the message may be read, either directly or via a POP or IMAP server. These servers are also known as Mail User Agents (MUAs).
+
+The basic steps for the creation, transfer, and delivery of email are as follows:
+
+1. A user creates an email message using an email client, called a Mail User Agent (MUA).
+2. The MUA gives the email to a Mail Submission Agent (MSA).
+3. The MSA then hands off the email to a Mail Transfer Agent (MTA).
+4. The MTA is responsible for transferring the email to the Mail Delivery Agent (MDA).
+5. The Mail Delivery Agent handles delivering the email to the Mail User Agent (MUA).
+6. The recipient user then reads the email message via the MUA.
+
+This arrangement is illustrated in the following figure. Bear in mind that the number of links in this chain is variable and depends on how each system is configured. In the simplest case, local email stays on just one system. In theory, an arbitrarily large number of computers can be involved in an email exchange. MTA can function as both a server (receiving mail from other  systems) and a client (sending mail to other systems). Therefore, you must deal with both sides of the configuration equation. The primary focus in this chapter will be on email’s MTA.
+
+Choosing Email Software
+
+Linux supports quite a few email MTA servers. Most likely, one of the major servers will be installed on your system by default. If not, and if you want to install one, you’ll have to pick one. You may also want to change your email server if you need a more advanced configuration. Four email MTA servers are popular on Linux:
+
+Sendmail The sendmail program (www.sendmail.org) was for many years the dominant email server package on the Internet. It has lost some of its dominance to other servers. Nonetheless, sendmail remains a popular server. It’s very powerful, but it can be hard to configure because its configuration file formats are rather difficult.
+
+Postfix Postfix (www.postfix.org) was designed as a modular replacement for sendmail. While sendmail uses a single program that does everything, Postfix uses multiple programs, each of which handles its own specific small task. This design improves security—at least in theory. Postfix tends to be easier to configure than sendmail, and it’s become the default email server on many Linux distributions.
+
+Exim Although Exim (www.exim.org) is a huge server like sendmail, it has a much simpler configuration file format and so is easier to configure. A few Linux distributions use Exim as the default email server.
+
+Qmail The fourth major Linux email server, qmail (www.qmail.org), is a modular server with security as a major design goal. Like Postfix and Exim, qmail is easier to configure than sendmail. It’s not often the standard email server in Linux distributions because its license is a bit strange and complicates qmail distribution with Linux. However, many system administrators like qmail enough that they replace their distributions’ standard email servers with qmail.
+
+you may need to check for each of the programs in turn. For example, you might see results like these:
+
+$ ps ax | grep sendmail
+31129 pts/2 R+ 0:00 grep sendmail
+
+
+$ ps ax | grep postfix
+7778 ? Ss 0:45 /usr/lib/postfix/master
+31132 pts/2 S+ 0:00 grep post
+
+The search for a process containing the string sendmail failed, but the search for postfix returned a process called usr/lib/postfix/master. Thus, it appears that Postfix is running on this system.
+
+Working with Email
+
+Along with understanding which email MTA server your system has or which one you desire to install, you also need to know how to complete a few common administrative tasks. These tasks involve sending and receiving mail using the mail utility, email queue
+management, configuring aliases, and forwarding email.
+
+Sending and Receiving Email
+
+Linux supports a wide variety of email clients, some of which were mentioned earlier in “Choosing Email Software.” Chances are that you’ll use a full-fledged email client for your personal email. However, you should also know how to use the command-line—based mail program. This tool is a very basic command-line email utility. It has the advantage of being usable from a script. Therefore, you can write a script to handle some email tasks automatically, and perhaps even run that script automatically.
+The mail program is intended to be used on the command-line to send or receive messages. The basic syntax for mail, including its most useful options for sending email, is as follows:
+
+mail [-v] [-s subject] [-c cc-address] [-b bcc-address] to-address
+
+The basic syntax for receiving email is as follows:
+
+			mail [-v] [-f [name] | -u user]
+
+You can achieve various goals with the options to mail:
+
+Use Verbose Operation As with many commands, the -v option produces more verbose output. This may be helpful if you need to debug problems.
+
+Specify a Subject Line The -s subject option enables you to specify a subject line.
+
+Set a Carbon Copy Address You can send a message to multiple people by using the –c cc-address and -b bcc-address options. These options vary in that the -b option produces a “blind” copy, meaning the recipient’s address doesn’t appear in the address list. This is useful if you want to send a copy of an email discreetly to somebody, but some spam filters may delete such emails.
+
+Set the Recipient’s Address The main recipient’s email address is required and terminates the mail command’s line for an outgoing email.
+
+Read Email To read your email, optionally pass the -f option to the program followed by the name of the mail spool file. Alternatively, you can use the -u user option to read the mail of the specified user.
+
+This list of options is incomplete, but it includes the most important features. You should consult the man page for mail to learn about more unusual options.
+
+As an example of mail in action, consider the task of sending a quick email message. Here’s an example of a test email:
+
+$ mail -s "Test email" Christine
+This is a test email.
+EOT
+$
+
+After you type the mail command, the program waits for input via standard input, but there’s no prompt. You signal the end of the message by pressing Ctrl+D. This example shows a simple one-line message. After you press Ctrl+D, the program displays EOT, which stands for End of Transmission, and the message is on its way.
+
+To use mail in a script, you can use input redirection to pass it the contents of a file to be mailed:
+
+					mail -s "Automated alert!" < /tmp/alert.txt john
+
+This line, if included in a script, sends the contents of the /tmp/alert.txt fi le to the user john with the "Automated alert!" subject line. You can use mail to read incoming email too, but only if it’s stored on a local Linux mail spool. In this case, you’ll normally use mail interactively. Type mail, and you’ll see the contents of your mail spool. Each message has a summary line that lists the sender,
+date, and subject, among other things:
+
+					0046 sally@luna.edu Sun Jan 13 18:27 116/4262 Priorities
+
+This is message number 46, it’s from sally@luna.edu, it arrived on January 13 at 18:27 (6:27 p.m.), it has 116 lines and 4262 bytes (including headers), and its subject is Priorities.
+
+To read a message, type its number. You can then delete the message by typing d or reply to it by typing r. As a practical matter, most people prefer to use more sophisticated email readers for their day-to-day mail reading. You’ll probably find mail more useful for the scripted sending of email than for reading email or sending personal email.
+
+On Linux, email is tied intricately to user accounts. The mail server holds incoming messages for each user, typically in a fi le in the /var/spool/mail/ directory. For instance, the fi le that holds the mail for the user john is the /var/spool/mail/john fi le. Some email
+servers store incoming mail in users’ home directories, such as ~/Maildir. This incoming mail file or directory is referred to as the user’s mail spool.
+Checking the Email Queue
+
+An email server manages a queue of email messages that it must deliver. The email server sends email messages to another computer or stores them in local users’ mail spools. Various problems can lead to a temporary or permanent inability to deliver messages. When a problem seems to be temporary, such as a network routing failure, the email server must store the message and try to deliver it again later. Thus, a Linux server’s email queue may contain undelivered messages. Knowing how to identify these messages and manage the queue can help you keep your email subsystem working smoothly. The mailq program is the main tool to help in email queue management. This program was originally part of the sendmail package, but Postfi x, Exim, qmail, and other Linux MTA servers have all implemented compatible commands. Unfortunately, command options differ between implementations. The basic command, without any options, shows the contents of the email queue on all systems:
+
+$ mailq
+-Queue ID- --Size-- ----Arrival Time---- -Sender/Recipient-------
+5B42F963F* 440 Fri Jan 18 13:58:19 sally@example.com
+benf@luna.edu
+-- 0 Kbytes in 1 Request.
+If a network connection or upstream email server goes down temporarily, email messages can pile up in the queue. Your MTA server will ordinarily attempt redelivery at a later date. However, if you want to clear the queue, you can do so. 
+Typing sendmail –q will do the job with most MTA servers. Some have other equivalent commands, such as postqueue in Postfi x or runq in Exim.
+
+Redirecting Email
+
+Email aliases enable one address to stand in for another one. For instance, all email servers are supposed to maintain an account called postmaster. Somebody who’s responsible for maintaining the system should read email to this account. One way to do this is
+to set up an alias linking the postmaster name to the name of a real account. You can do this by editing the aliases fi le, which usually resides in /etc or sometimes in /etc/mail. 
+
+The aliases fi le format is fairly straightforward. Comment lines begin with hash marks (#), and other lines take the following form:
+name: address1[,address2[,...]] The name parameter that leads the line is a local name, such as postmaster. Each address (address1, address2, and so on) can be one of the following:
+
+■ A local account name to which the messages are forwarded
+■ A local file name in which messages are stored (denoted by a leading slash)
+■ A command through which messages are piped (denoted by a leading vertical bar character)
+■ A file name whose contents are treated as a series of addresses (denoted by a leading :include: string) or a full email address (such as fred@example.com)
+
+A typical default configuration includes a few useful aliases for accounts such as postmaster. Most such configurations map nearly all of these aliases to root. However, reading mail as root is inadvisable because doing so increases the odds of a security
+breach or other problems due to mail reader bugs. Thus, you may want to set up an alias line as follows:
+
+root: username
+
+This redirects all of root’s mail, including mail directed to root via another alias, username. The username value is most likely to be a local username or a valid remote email address. However, it can take any of the forms described earlier. Some mail servers, including sendmail, Postfix, and qmail, require you to compile /etc/aliases into a binary fi le before an alias will take effect. To do so, use the newaliases command:
+
+# newaliases
+
+Exim has a newaliases command for compatibility with sendmail. By default, however, it doesn’t do anything.
+Another approach to redirecting mail is to do so at the user level. In particular, you can edit the ~/.forward fi le in a user’s home directory to have mail for that user sent to another address. Specifically, the ~/.forward fi le should contain only the new address. This address can be either a username on the current computer or an entire email address on another computer.
+
+Forwarding email has the advantage that individual users can employ it. It’s also handy in situations such as when a user scheduled to be away for several weeks asks another employee to fill in for them. 
+
+A drawback of forwarding email is that it can’t be used to set up aliases for nonexistent accounts or for accounts that lack home directories. The ~/.forward fi le can also be changed or deleted by the account owner, which might not be desirable if you want to enforce a forwarding rule, which the user shouldn’t be able to override.

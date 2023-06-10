@@ -1,0 +1,267 @@
+
+Unix History 1969 in AT & T‘s employees at Bell‘s laboratory.
+ PDP – 7 (Programmed Data Processor)computers.  written in Assembly language.  
+ MULTICS (Multiplex Information and Computing services).
+ as UNICS (Uniplexed Information and Computing Services). 
+Later its spelling is changed or modified as UNIX.
+
+People Involved – Unix The first version of UNIX was created in 1969 by 
+Kenneth Thompson and Dennis Ritchie, system engineers at AT&T's Bell Labs.
+
+
+Linux HistoryGNU (GNU is not Unix)Project Launched by Richard Stallman in 1983 for creating a free OS.
+GPL (General Public License) which guarantees end users the freedom to run, study, share and modify the software.
+ GPL originally written by Richard Stallman of the Free Software Foundation (FSF) for the GNU Project.
+Linux Kernel written by Linus Torvalds in 1991.
+Linus released Version 0.12 under GNU-GPL.
+
+GNU –GNUs Not Unix 
+In 1983, Richard Stallman started the GNU project 
+with the goal of creating a free UNIX-like operating system.
+
+LinuxThe history of Linux began in 1991 with the commencement of a personal project 
+by Finnish student Linus Torvalds to create a new free operating system kernel. 
+
+GNUThe licenses for most software are designed to take away your freedom to share and change it. 
+GNU General Public License is intended to guarantee your freedom to share and change free software 
+to make sure the software is free for all its users.
+ This General Public License applies to most of the 
+ Free Software Foundation's software and to any other program whose authors commit to using it.
+
+ GPLWhen we speak of free software, we are referring to freedom, not price. 
+ General Public Licenses  are designed to make sure that you have the freedom 
+ to distribute copies of free software (and charge for this service if you wish)
+ That you receive source code or can get it if you want it, that you can change the 
+ software or use pieces of it in new free programs and that you know you can do these things.
+
+ Many hardware devices require configuration—you must set the IRQ, I/O port, and DMA addresses used by the device.
+  (Not all devices use all three resources.) Through the mid-1990s, this process involved tedious changes to jumpers
+   on the hardware. Today, though, you can configure most options through software.
+
+Configuring PCI Cards
+
+The PCI bus, which is the standard expansion bus for most internal devices, was designed with Plug-and-Play (PnP) 
+style configuration in mind, thus automatic configuration of PCI devices is the rule rather than the exception.
+ For the most part, PCI devices configure themselves automatically, and there’s no need to make any changes.
+
+PCI devices are detected in several ways as follows:
+The Linux kernel has several options that affect how it detects PCI devices. You can find these in the kernel configuration
+ screens under Bus Options.
+Most firmware implementations have PCI options that change the way PCI resources are allocated.
+Some Linux drivers support options that cause them to configure the relevant hardware to use particular resources.
+You can use the setpci utility to query and adjust PCI devices’ configurations directly. The utility/command lspci have
+ the following options:
+
+Configuring USB Devices
+
+USB is an extremely popular (perhaps the most popular) external interface form. This fact means that you must understand 
+something about USB, including USB itself, Linux’s USB drivers, and Linux’s USB management tools.
+
+USB Basics
+
+USB is a protocol and hardware port for transferring data to and from devices. It allows for many more (and varied) devices. 
+The USB 1.0 and 1.1 specifications allow for up to 127 devices and 12Mbps of data transfer. USB 2.0 allows for much higher
+transfer rates—480Mbps, to be precise. USB 3.0, introduced in 2010, supports a theoretical maximum speed of 4.8Gbps, 
+although 3.2Gbps is a more likely top speed in practice. USB 3.0 devices require a different physical connector than 1.0, 1.1, and 2.0 
+connectors.
+
+USB is the preferred interface method for many external devices, including printers, scanners, mice, digital cameras, 
+fl ash drives, and music players. USB keyboards, Ethernet adapters, modems, speakers, hard drives, and other devices are 
+also available, although
+ USB has yet to dominate these areas as it has some others. Most desktop computers ship with four to eight USB ports 
+ (though laptops tend to include just two or three USB ports).
+
+Configuring USB Devices
+Linux USB Drivers
+Several different USB controllers are available, with names such as UHCI, OHCI, EHCI, and R8A66597. Modern Linux distributions 
+ship with the drivers for the common USB controllers enabled, so your USB port should be activated automatically when you boot the computer.
+ The UHCI and OHCI controllers handle USB 1.x devices, but most other controllers can handle USB 2.0 devices. You need a 2.6.31 or
+ newer kernel to use USB 3.0 hardware.
+
+The lsusb command in Linux is used to display the information about USB buses and the devices connected to them. The properties displayed are speed, BUS, class, type details, etc.
+
+Syntax:
+
+lsusb [ options ]
+
+-v : This option is used to display the output in verbose mode and also display detailed information about the devices connected.
+			lsusb –v
+
+-s : This option is used to display the only device specified by the bus and/or device number.
+
+			Example:  lsusb -s 2:4
+-t : This option is used to dump the physical USB device hierarchy as a tree.
+
+			Example:	 lsusb –t
+-D : This option is used to display information about the specified device file. The device file should be like /dev/usb/002/004.
+
+			Example: 	 lsusb -D /dev/bus/usb/002/004
+
+USB Manager Applications
+
+USB can be challenging for OSs because it was designed as a hot-pluggable technology. The Linux kernel wasn’t originally designed with this sort 
+of activity in mind, so the kernel relies on external utilities to help manage matters. Two tools in particular are used for managing USB devices: 
+usbmgr and hotplug. While these tools are not commonly installed by default in Linux distributions, they can come in handy when working with USB devices.
+
+
+
+Major modern desktop OSs all provide some form of graphical user interface (GUI) that provides the windows, menus, dialog
+boxes, flexible fonts, and so on with which you’re familiar. In Linux, the main GUI is known as the X Window System (or X for short).
+ Most distributions today provide auto-detection and easy configuration options during installation, and these usually work correctly.
+
+Basic X configuration specifies features such as the mouse used, the keyboard layout, the screen resolution, the video refresh rate,
+ the display color depth, and the video card you’re using. Some of these options require telling X about what hardware you have installed,
+ whereas others enable you to adjust settings on your hardware. GUI and text-mode configuration utilities can help you configure X.
+
+ 
+X Server Options for Linux
+
+XFree86 The dominant X server in Linux until 2004 was XFree86 (www.xfree86.org). This open-source server supports a wide array of video cards and input devices, and most Linux software was originally designed with XFree86 in mind.
+X.org-X11 In 2004, most Linux distributions shifted from XFree86 to X.org-X11 because of licensing changes to XFree86. X.org-X11 6.7.0 was based on XFree86 4.3.99, but it has been developed independently up to the current 
+version, 7.7. Because X.org-X11 is based on XFree86, the two are virtually identical in most important respects.
+Accelerated-X The commercial Accelerated-X server from Xi Graphics (www.xig.com) is an alternative to the open-source  
+     XFree86 and X.org-X11.
+
+X Configuration Utilities
+
+Several configuration tools for XFree86 4.x and X.org-X11 are available:
+
+The X server itself includes the capacity to query the hardware and produce a configuration fi le. To do this, type XFree86 -configure (for XFree86) or Xorg -configure (for X.org-X11) as root when no X server is running.
+
+Many modern distributions ship with their own custom X configuration tools. These include Red Hat’s (and Fedora’s) Display Settings tool (accessible from the default desktop menu or by typing system-config-display in an xterm) 
+and SUSE’s YaST and YaST2. These tools frequently resemble the distribution’s install-time X
+configuration tools, which can vary substantially.
+
+Setting the Keyboard
+The keyboard is one of two common input devices configured 
+via an InputDevice section:
+
+Section "InputDevice"
+Identifier "Keyboard0"
+Driver "kbd"
+Option "XkbModel" "pc105"
+Option "XkbLayout" "us"
+Option "AutoRepeat" "500 200"
+EndSection
+
+Setting the Mouse
+A second InputDevice section controls how X treats the mouse:
+
+Section "InputDevice"
+Identifier "Mouse0"
+Driver "mouse"
+Option "Protocol" "IMPS/2"
+Option "Device" "/dev/input/mice"
+Option "Emulate3Buttons" "no"
+Option "ZAxisMapping" "4 5"
+EndSection
+
+Setting the Monitor
+
+Some of the trickiest aspects of X confi guration relate to the monitor options. You set these in the Monitor section,
+ which can sometimes be quite large. A modest Monitor section looks like this:
+
+Section "Monitor"
+Identifier "Monitor0"
+ModelName "AOC e2343Fk"
+HorizSync 30.0 - 83.0
+VertRefresh 55.0 - 75.0
+# My custom 1920x1080 mode
+Modeline "1920x1080" 138.50 1920 1968 2000 2080 1080 1083 1088 1111 EndSection
+
+Setting Card-Specific Options
+
+The Device section of the xorg.conf fi le sets various options related to specifi c X servers.
+
+A typical Device section resembles the following:
+
+
+Section "Device"
+Identifier "Videocard0"
+Driver "nv"
+VendorName "nVidia"
+BoardName "GeForce 6100"
+VideoRam 131072
+EndSection
+
+
+
+
+Fonts have long been a trouble spot for Linux (or more precisely, for X). X was created at a time when available font technologies were primitive by today’s standards,
+ and although X has been updated in various ways to take advantage of newer technologies, these updates have been lacking compared to the font subsystems in most competing OSs. 
+X’s core font system can be set up from the X configuration file. Alternatively, you can configure a font server—a program that delivers fonts to one or many computers using network
+ protocols—to handle the fonts.
+
+ Font Technologies and Formats
+
+Font technologies can be classified as falling into one of two broad categories:
+
+Bitmap Fonts The simplest type of font format is the bitmap font, which represents fonts much like bitmap graphics in which individual pixels 
+in an array are either active or inactive. Bitmap fonts are fairly easy to manipulate and display from a programming perspective, which makes them good for low-powered computers.
+
+Outline Fonts Most modern fonts are distributed as outline fonts (aka scalable fonts). This type of format represents each character as
+ a series of lines and curves in a high-resolution matrix. The computer can scale this representation to any font size or for any display 
+ resolution, enabling a single font fi le to handle every possible use of the font.
+
+ Configuring X Core Fonts
+
+X core fonts are those that are handled directly by X. To configure these fonts, you must do two things: prepare a font directory that holds the fonts, and add the font directory to X’s font path.
+
+Preparing a Font Directory
+
+The first step to installing fonts is to prepare a directory in which to store them. XFree86 has traditionally stored its fonts in subdirectories of /usr/X11R6/lib/X11/fonts/, but X.org-X11 changes this to /usr/share/fonts or /usr/share/X11/fonts. In either case, if you’re
+ adding fonts that you’ve downloaded from the Internet or obtained from a commercial font CD-ROM, you may want to store these additional fonts elsewhere, such as /opt/ Configuring X Fonts 297 fonts or /usr/local/fonts. 
+
+the simplest way to do the job is to use mkfontscale and mkfontdir:
+# mkfontscale
+# mkfontdir
+# ttmkfdir
+
+Adding Fonts to X’s Font Path
+Once you’ve set up fonts in a directory and created a fonts.dir file describing them,
+ you must add the fonts to the X font path. You do this by editing the Files section of the XF86Config or xorg.conf file
+
+Section "Files"
+FontPath "/usr/share/fonts/100dpi:unscaled"
+FontPath "/usr/share/fonts/Type1"
+FontPath "/usr/share/fonts/truetype"
+FontPath "/usr/share/fonts/URW"
+FontPath "/usr/share/fonts/Speedo"
+FontPath "/usr/share/fonts/100dpi"
+EndSection
+
+to add the font path to a running system by using the xset program:
+
+$ xset fp+ /your/font/directory
+$ xset fp rehash
+
+Configuring a Font Server
+A font server is a handy way to deliver fonts to many computers from a central location.
+This can be a great time-saver if you want to add fonts to many computers—set them up to 
+use a font server and then tweak that server’s font configuration. To use a font server, 
+X must list that server in its font path:
+Section "Files"
+FontPath "unix:/7100"
+FontPath "tcp/fount.pangaea.edu:7100"
+EndSection
+
+To add fonts to a font server, you should first install the fonts on the system, 
+as described earlier in “Preparing a Font Directory.” You should then modify the 
+font server’s configuration fi le, /etc/X11/fs/config. Rather than a series of FontPath
+ lines, as in the main X configuration fi le, the font server’s configuration lists the font path using the catalogue keyword as a comma-delimited list:
+
+catalogue = /usr/share/fonts/100dpi:unscaled,
+/usr/share/fonts/Type1,
+/usr/share/fonts/truetype,
+/usr/share/fonts/URW,
+/usr/share/fonts/Speedo,
+/usr/share/fonts/100dpi
+
+The catalogue list may span several lines or just one. In either event, all of 
+the entries are separated by commas, but the fi nal entry ends without a comma. 
+You can add your new font directory anywhere in this list.
+
+
+
+
+

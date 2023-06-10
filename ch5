@@ -1,0 +1,386 @@
+Using File Management Commands
+
+Basic file management is critical to the use of any computer. This is particularly true on Unix-like systems, like Linux, because these systems treat almost everything as a file, including most hardware devices and various specialized interfaces. Therefore, being able to create, delete, move, rename, archive, and otherwise manipulate files is a necessary skill for any Linux user or system administrator. 
+
+Naming Files
+
+Linux filenames are similar to the filenames on any other OS. However, every OS, including Linux, has its filename quirks. Linux filenames can contain uppercase or lowercase letters, numbers, and even most punctuation and control characters. To avoid confusion, it is recommended that you restrict any non-alphanumeric symbols in your Linux filenames to the dot (.), the dash (-), and the underscore (_). However, some programs create backup files that end in the tilde (~) as well.
+
+Linux filenames can contain spaces, they must be escaped on the Linux command line. This is accomplished by preceding the space
+with a backslash (\) or by enclosing the entire filename in quotes ("). A few characters have special meaning and should never be used in filenames:
+
+		asterisk (*)	question mark (?)	forward slash (/)	backslash (\)	quotation mark (")
+
+Naming Files (Continues…)
+
+Linux filename length depends on the filesystem in use. On ext2fs, ext3fs, ext4fs, XFS, Btrfs, and many others, the limit is 255 characters.
+One- to four-character filename extensions are common in Linux. As with other OSs, the filename extension typically follows a single dot.
+Linux filenames can contain an arbitrary number of dots. In fact, filenames can begin with a dot. These so-called ”dot files” are hidden from view by most utilities that display files, so they’re popular for storing configuration files in your home directory. Two filenames are particularly special. A filename that consists of a single dot (.) refers to the current directory, whereas a filename that consists of a double dot (..) refers to the parent directory.
+Linux filenames are case sensitive. For example, Filename.txt is different from filename.txt or FILENAME.TXT.
+
+Exploring Wildcard Expansion Rules
+
+You can use wildcards with many commands. A wildcard is a symbol or set of symbols that stands in for other characters. 
+
+Three classes of wildcards are common in Linux:
+
+? A question mark (?) stands in for a single character. For instance, b??k matches book, balk, buck, or any other four-character filename that begins with a b and ends with a k.
+
+* An asterisk (*) matches any character or set of characters, including no character. For instance, b*k matches book, balk, and buck as well as bk, bbk, and backtrack. Any character and any number of characters can be in the filename as long as it begins with a b and ends with a k.
+
+Bracketed Values Characters enclosed in square brackets ([]) normally match any character in the set. For instance, b[ae]ok matches baok and beok. Each bracket group is used for single character matches. As in the example above, the second character in the name could be either an a or an e. You can use multiple brackets in the same name. For example, b[ae]o[ks] searches for character sets in both the second and fourth character position. The names that would match this wildcard setting would include baok, beok, baos, and beos.
+ls b??k
+ls b*k
+ls b[ae]ok
+
+
+Understanding the File Commands
+
+A few file-manipulation commands are extremely important to everyday fi le operations. These commands enable you to list, copy, move, rename, and delete files.
+
+a) Using the ls Command
+
+To manipulate fi les, it’s helpful to know information about them. This is the job of the ls command, whose name is short for list. The ls command displays the names of files in a directory. Its syntax is simple:
+
+ls [options] [files]
+
+b) Using the cp Command
+The cp command copies a file. Its basic syntax is as follows:
+						
+cp [options] source destination
+The source option can be one or more files. It is the original file or fi les that you wish to copy.
+c) Using the mv Command
+
+The mv command (short for move) is commonly used both to move fi les and directories from one location to another and to rename them. Linux doesn’t
+ distinguish between these two types of operations, although many users do. The syntax of mv is similar to that of cp:		
+mv [options] source destination
+
+d) Using the rm Command
+To delete a file, use the rm command. The command name is short for remove, and its syntax is simple:
+rm [options] files
+The rm command accepts many of the same specfied options values as cp or mv.
+
+e) Using the touch Command
+
+Linux-native file systems maintain three time stamps for every file:
+
+■ Last file-modification time
+■ Last inode change time
+■ Last access time
+
+Various programs rely on these time stamps. For instance, the make utility uses the time stamps to determine which source-code
+files must be recompiled if an object file already exists. Thus, sometimes you may need to modify the time stamps. This is the job of the touch command, which has the following syntax:
+touch [options] files
+
+By default, touch sets the modification and access times to the current time.
+
+
+Archiving File Commands
+
+A file-archiving tool collects a group of files into a single package file,
+ called an archive. An archive is more easily moved around than a group of
+ files for applications such as transferring across a network or moving to backup media.
+Linux supports several archiving commands, the most prominent being tar and cpio.
+ The dd command, although not technically an archiving command, 
+ is similar in some ways because it can copy an entire partition or disk into a file and vice versa.
+
+Using the tar Utility
+The tar program’s name stands for “tape archiver”. You can use tar to archive data to other media. In fact,
+ tarballs are often used for transferring multiple files between computers in one step, such as when distributing 
+ source code. A tarball is an archive file created by tar and typically compressed with gzip, xz, or bzip2.
+
+
+ The tar utility is easy to use but very powerful. The basic syntax for the tar command is as follows:
+
+ tar [options] destination/tar_file_name files-to-archive
+ The three compression tools, gzip is the oldest and provides the least compression,
+  bzip2 provides improved compression, and xz is the newest and provides the best compression. 
+  Typically, files compressed with these utilities have .gz, .bz2, or .xz filename extensions, respectively.
+
+  Example:
+
+  Say you want to compress an entire directory named /home/mohamed/data/:
+  
+  $ tar -czvf file.tar.gz /home/mohamed/data/
+  
+  To compress multiple directories and files, execute:
+  
+  $ tar -czvf file.tar.gz /home/mohamed/data/ /home/mohamed/pics/ /home/mohamed/.accounting.db
+  
+  One can use bzip2 compression instead of gzip by passing the -j option to the tar command:
+  
+  $ tar -cjvf file.tar.bz2 /home/mohamed/data/
+  
+  Where,
+  
+  -c : Create a new archive
+  -v : Verbose output
+  -f file.tar.gz : Use archive file
+  -z : Filter the archive through gzip
+  -j : Filter the archive through bzip2
+  
+  How to exclude directories and files when using tar
+
+You can exclude certain files when creating a tarball. The syntax is:
+
+$ tar -zcvf archive.tar.gz --exclude='dir1' --exclude='regex' dir1
+
+For example, exclude ~/Downloads/ directory:
+$ tar -czvf /nfs/backup.tar.gz --exclude="Downloads" /home/vivek/
+
+How do I extracting an archive?
+
+You can extract an archive or tarball with the tar command. The syntax is:
+
+$ tar -xzvf file.tar.gz
+$ tar -xjvf file.tar.bz2
+
+Want to extract the contents of the archive into a specific directory such as /home/mohamed/backups/? Try passing the -C DIR option:
+
+$ tar -xzvf my.tar.gz -C /home/vivek/backups/
+$ tar -xjvf archive.tar.bz2 -C /tmp/
+
+-x : Extract files from an archive
+-t : List the contents of an archive
+-v : Verbose output
+-f file.tar.gz : Use archive file
+-C DIR : Change to DIR before performing any operations
+--exclude : Exclude files matching PATTERN/DIR/FILENAME
+
+
+Using the cpio Utility
+
+The cpio program is similar in principle to tar, but the details of its operation differ. 
+As with tar, you can direct its output straight to a media device or to a regular archive file. 
+Backing up to a media device can be a convenient way to back up the computer because it requires no
+ intermediate storage. To restore data, you use cpio to read directly from the media device file or from a regular archive file.
+
+The cpio utility has three operating modes:
+
+Copy-Out Mode This mode, activated by use of the -o or --create option, creates an archive and copies files into it.
+
+Copy-In Mode You activate copy-in mode by using the -i or --extract option. This mode extracts data from an existing archive. If you provide a filename or a pattern to match, cpio extracts only those files whose names match the pattern you provide.
+
+Copy-Pass Mode This mode is activated by the -p or --pass-through option. It combines the copy-out and copy-in modes, enabling you to copy a directory tree from one location to another.
+
+Using the dd Utility
+
+Sometimes you want to archive a filesystem at a very low level. For instance, you may want to create a representation of a DVD that you can store on your hard disk or back up a filesystem that Linux can’t understand. To do so, you can use the dd program.
+The dd utility is a low-level copying program. When you give it a partition device file as input, it copies that partition’s contents to the output file you specify. This output file can be another partition identifier, a media device, or a regular file, to name three possibilities. 
+
+The input and output files are passed with the if=file and of=file options:
+
+# dd if=/dev/sda3 of=/dev/dvd
+
+This command backs up the /dev/sda3 disk partition to /dev/dvd (a DVD drive). The result is a very low-level backup of the partition that can be restored by swapping the if= and of= options:
+
+# dd if=/dev/dvd of=/dev/sda3
+
+The dd utility can be a way to create exact backups of entire partitions.
+
+
+Managing Links
+
+In Linux, a link is a way to give a file multiple identities, similar to shortcuts in Windows and aliases in Mac OS. There are a few reasons Linux employs links:
+
+■ To help make files more accessible
+■ To give commands multiple names
+■ To enable programs that look for the same files in different locations to access the same files
+
+Two types of links exist: hard links and symbolic links (soft links). Hard links are produced by creating two directory entries that point to the same file (more precisely, the same inode). Both filenames are equally valid and prominent; neither is a “truer” 
+filename than the other, except that one was created first (when creating the file) and the other was created second. To delete the file, you must delete both hard links to the file. The underlying filesystem must support hard links.
+
+Symbolic links, by contrast, are special file types. The symbolic link is a separate file whose contents point to the linked-to file. Linux knows to access the linked-to file whenever you try to access the symbolic link. The ln command creates these links. Its syntax is :
+			ln [options] source link
+
+The original file is source, and link is the name of the link you want to 
+create. This command supports options that have several effects:
+			-f   Remove Target Files
+			-d  Create Directory Hard Links
+			-s    Create a Symbolic Link
+Understanding the Directory Commands
+
+Most of the commands that apply to fi les also apply to directories.
+
+Using the mkdir Command
+
+The mkdir command creates a directory. This command’s offi cial syntax is as follows:
+				
+				mkdir [options] directory-name(s)
+
+Using the rmdir Command
+
+The rmdir command is the opposite of mkdir; it destroys a directory. Its syntax is similar:
+				
+				rmdir [options] directory-name(s)
+
+Example:
+				mkdir sample						cd..   cd \   cd ~
+                             
+				rmdir sample
+
+
+				Managing File Ownership
+
+				Security is an important topic that cuts across many types of commands and Linux subsystems. In the case of files, security is built on file ownership and file permissions. These two topics are closely intertwined: ownership is meaningless without permissions that use it, and permissions rely on the existence of ownership. Ownership is two tiered: Each file has an individual owner and a group with which it’s associated.
+				
+				Assessing File Ownership
+				You can learn who owns a file with the ls command, in particular -l option produces a long listing, which includes both ownership
+				and permission information:
+				
+				$ ls –l
+				
+				-rw-rw-r--. 1 Christine Users 826 Sep 25 11:09 my-work.tgz
+				-rw-rw-r--. 1 Christine Users 9972 Sep 25 10:30 project_a354
+				
+				
+				Changing a File’s Owner
+
+				Whenever a file is created, it’s assigned an owner. The superuser can change a file’s owner using the chown command. It can also be used to change the file’s group. The chown command has the 
+				following syntax:
+						
+						chown [options] [newowner][:newgroup] filenames
+				
+					# chown sally:skyhook forward.odt
+
+					Changing a File’s Group
+
+					Both root and ordinary users may run the chgrp command, which changes a file’s group.This command’s syntax is :
+					
+						chgrp [options] newgroup filenames
+					
+					The chgrp command accepts many of the same options as chown. Ordinary users may only change a file’s group to a group to which they belong.)
+
+					Understanding Permissions
+
+					At the core of Linux permissions are permission bits, which provide access control for fi les. In addition, a few special permission bits exist. These special bits provide some unusual features.
+					
+					Digging into the Meanings of Permission Bits
+					
+					Consider the following fi le access control string that’s displayed with the -l option to ls:
+					
+					$ ls -l test
+					
+					-rwxr-xr-x. 1 Christine Users 843 Sep 27 09:10 test
+					
+					This string (-rwxr-xr-x in this example) is 10 characters long. The first character has special meaning it’s the file type code. The type code determines how Linux will interpret the file as ordinary data, a directory, or a special file type. 
+					
+The remaining permission string’s nine characters (rwxr-xr-x in the example) are broken up into three groups of three characters each, as follows
+					
+
+Changing a File’s Permission using chmod
+
+You can modify a file’s permissions using the chmod command. This command may be issued in many different ways to achieve the same effect. Its basic syntax is as follows:
+
+			chmod [options] [mode[,mode...]] filename...
+
+ABSOULTE MODE
+File access permissions can be changed by a numerical (octal) chmod specification. Read permission is given the value 4, write permission the value 2 and execute permission 1.
+r w x
+4 2 1
+
+These  values are added together for any one user category:
+
+0 = no permissions
+1 = execute only
+2 = write only
+3 = write and execute (1+2)
+4 = read only
+5 = read and execute (4+1)
+6 = read and write (4+2)
+7 = read and write and execute (4+2+1)
+
+So access permissions can be expressed as three digits. For example:
+user group others
+chmod 640 file1                              rw- r-- ---
+chmod 754 file1                              rwx r-x r--
+chmod 664 file1                              rw- rw- r--
+
+
+SYMBOLIC MODE
+
+The chmod command is used to change access permissions for files which you own. The syntax is:
+
+chmod [who] [+/-/=] [permissions] filename
+
+where:
+
+who action permissions
+
+u = user 
+g = group
+o = other
+
++ = add
+- = remove
+= add the specified permission
+
+Setting the Default Mode and Group
+
+When a user creates a fi le, that file has default ownership and permissions. The default owner is, understandably, the user who created the file. The default group is the user’s primary group. The default permissions are configurable. These are defined by the user mask, which is set by the umask command. This command takes as input an octal value that represents the bits to be removed from 777 permissions for directories, or from 666 permissions for files,  when a new file or directory is created.
+Example 1:
+
+$ umask 0022
+
+
+$ umask
+0022
+
+$ umask –S
+
+u=rwx,g=rwx,o=rx
+
+$ touch newfile.dat
+
+$ ls -l newfile.dat
+-rw-r--r--. 1 Christine Users 0 Sep 26 08:24 newfile.dat
+
+
+
+Changing File Attributes
+
+Some filesystems support additional attributes (other than those described in the preceding sections).
+ In particular, some Linux-native filesystems support several attributes that you can adjust with the chattr command:
+ Example 
+
+To add the immutable flag to the important.txt file, you enter the following command:
+
+# chattr +i important.txt
+
+The result is that you’ll be unable to delete the file, even as root. To delete the file, you must first remove the immutable flag:
+
+# chattr -i important.txt
+
+Managing Disk Quotas
+
+Just one user of a multiuser system can cause serious problems by consuming too much disk space. If a single user creates huge 
+files (say, multimedia recordings), those files can use enough disk space to prevent other users from creating their own files. To help manage this situation, Linux supports disk quotas; that is, limits enforced by the OS on how many files or how much disk space a single user may consume. The Linux quota system supports quotas both for individual users and for Linux groups.
+
+You must modify your /etc/fstab entries for any partitions on which you want to use quota support. In particular, you must add the usrquota filesystem mount option to employ user quotas and the grpquota option to use group quotas. Entries that are so configured resemble the following:
+
+/dev/sdc5 /home ext4 usrquota,grpquota 1 1
+
+This line activates both user and group quota support for the /dev/sdc5 partition, which is mounted at /home. Of course, you can add other options if you like.
+
+				chkconfig quota on
+
+				# quotacheck -cu /home
+
+
+				Setting Quotas for Users
+
+				You can set the quotas by using the edquota command. This command uses a text editor, such as the vi editor. However, the editor of your choice is selected by setting or changing the EDITOR environment variable. The editor opens a temporary configuration file, /etc/quotatab, which controls the specified user’s quotas. When you exit the utility, edquota uses the temporary configuration file to write the quota information to low-level disk data structures. These structures control the kernel’s quota mechanisms.
+				
+						#edquota sally                             Username			-t for setting grace period
+																		-g to adjust quotas for the group
+				The contents of the editor show the current quota information:
+				
+				Disk quotas for user sally (uid 21810):
+				
+				Filesystem blocks soft hard inodes soft hard
+				/dev/sdc4 97104 1048576 1048576 1242 0 0
+				
+				
+				A useful auxiliary quota command is repquota, which summarizes the quota information about the filesystem you specify or on all 
+				fi lesystems if you pass it the -a option.
+				

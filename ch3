@@ -1,0 +1,392 @@
+Understanding Command-Line Basics
+
+The shell allows you to enter commands as needed. Which commands can be entered depending on which shell program is running. Several of the available shell programs are briefly described. Environment variables, which are placeholders for data that may be useful to many programs.
+Exploring Your Linux Shell Options
+
+The shell to be used for entering commands is configured for each individual user, and Linux provides a range of available shells. The following shells are among the more common choices:
+ 
+- bash The GNU Bourne Again Shell (bash) is based on the earlier Bourne shell for Unix
+but extends it in several ways. 
+
+- sh The Bourne shell upon which bash is based goes by the name sh. It’s not often used in Linux and the sh command is often a pointer to the bash shell or other shells.
+
+
+tcsh This shell is based on the earlier C shell (csh). It’s a fairly popular shell in some circles, but no major Linux distributions make it the default shell. Although it’s similar to bash in many respects, some operational details differ. 
+- csh The original C shell isn’t used much on Linux, but if a user is familiar with csh, tcsh makes a good substitute.
+- ksh The Korn shell (ksh) was designed to take the best features of the Bourne shell and the C shell and extend them. It has a small but dedicated following among Linux users.
+- zsh The Z shell (zsh) takes shell evolution further than the Korn shell, incorporating features from earlier shells and adding still more.
+
+
+Using a Shell
+Linux shell use is fairly straightforward for anybody who’s used a text-mode OS before: You type a command, possibly including options to it, and the computer executes the command. For the most part, Linux commands are external—that is, they’re programs that are separate from the shell.
+A few commands are internal to the shell, though, and knowing the distinction can be important.
+Internal commands are, as you might expect, built into the shell program. Thus they are also called built-in commands. Most shells offer a similar set of internal commands, but shell-to-shell differences do exist. Keep in mind that even when external commands are installed, the internal command takes precedence. To access the external command, you must provide the complete external command path, as in typing /usr/bin/time rather than time.
+
+
+Starting a Shell
+If you log into Linux using a text-mode login screen, you have logged into a virtual console terminal and, most likely, you’ll be dropped directly into your default shell. The shell program is what presents the prompt and accepts subsequent commands. If you log into Linux using a graphical user interface (GUI) login screen, you’ll have to start a terminal emulator manually in order to reach your default shell. Some GUIs provide a menu option, such as xterm or terminal, to start a terminal emulator program.
+
+Exploring Shell Configuration
+Shells, like many Linux programs, are configured through files that hold configuration options in a plain-text format. A couple of examples of shell configuration files are ~/.bashrc and /etc/profile.  Even without knowing much about shell scripting, you can make simple changes to these files. Edit them in your favorite text editor, and change whatever needs changing.
+
+
+Using Environment Variables
+Environment variables are like variables in programming languages—they hold data to be referred to by the variable name. Environment variables differ from programs’ internal variables in that they’re part of the program’s environment, and other programs, such as the shell, can modify this environment. Programs can rely on environment variables to set information that can apply to many different programs. A fun environment variable to change is the 
+   $PS1 variable. It modifies your shell prompt:
+
+$ PS1="Prompt: "
+Prompt: export PS1
+$ Prompt: echo $PS1
+	       Prompt: echo $PATH 
+
+unset PS1 removes the $PS1 environment variable.
+
+
+Getting Help
+Linux provides a text-based help system known as man. This command’s name is short for
+manual, and its entries (its man pages) provide succinct summaries of what a command, file,
+or other feature does. 
+
+Ex: man cp
+      man ren
+      man mkdir
+There are also pages specifically for the built-in (internal) commands called the help pages. To read the help pages for a particular built-in command, type help command.
+
+Using Streams, Redirection, and Pipes
+Streams, redirection, and pipes are some of the more powerful command-line tools in Linux.  Linux treats the input to and output from programs as a stream, which is a data entity that can be manipulated. Ordinarily, input comes from the keyboard and output goes to the screen. You can redirect these input and output streams to come from or go to other sources, such as files. Similarly, you can pipe the output of one program as input into another program. These facilities can be great tools to tie together multiple programs.
+
+Symbols used:    >, < , |(pipe sysmbol)
+
+
+Exploring File Descriptors
+To begin understanding redirection and pipes, you must first understand the different file
+descriptors. Linux handles all objects as files. This includes a program’s input and output
+stream. To identify a particular file object, Linux uses fi le descriptors:
+
+Standard Input - Programs accept keyboard input via standard input, abbreviated STDIN.
+Standard input’s file descriptor is 0.
+
+Standard Output Text-mode programs send most data to their users via standard output,
+abbreviated STDOUT. Standard output is normally displayed on the screen, either in
+a full-screen text-mode session or in a GUI terminal emulator, such as an xterm. Standard
+output’s file descriptor is 1.
+
+Standard Error Linux provides a second type of output stream, known as standard error,
+abbreviated STDERR. Standard error’s file descriptor is 2.
+
+Internally, programs treat STDIN, STDOUT, and STDERR just like data files—they open them, read from or write to the files, and close them when they’re done. 
+
+Redirecting Input and Output
+To redirect input or output, you use operators following the command, including any options it takes. For instance, to redirect the STDOUT of the echo command, you would type something like this:
+
+$ echo $PATH 1> path.txt
+$ cat path.txt
+Piping Data between Programs
+
+Programs can frequently operate on other programs’ outputs. A pipe redirects the first program’s standard output to the second program’s standard input, and it is denoted by a vertical bar (|):
+
+		$ first | second
+
+Pipes can be used in sequences of arbitrary length:
+$ first | second | third | fourth | fifth | sixth [...]
+$ echo $PATH | tee path.txt
+$ cat path.txt
+
+
+Generating Command Lines
+The xargs command builds a command from its standard input. The basic syntax for
+this command is as follows:
+
+xargs [options] [command [initial-arguments]]
+
+The command is the command you want to execute, and initial-arguments is a list of arguments you want to pass to the command. The options are xargs options; they aren’t passed to command. When you run xargs, it runs command once for every word passed to it on standard input, adding that word to the argument list for command. If you want to pass multiple options to the command, you can protect them by enclosing the group in quotation marks.
+
+# find / -user Christine | xargs -d "\n" rm
+
+The first part of this command (find / -user Christine) finds all of the files in directory tree (/) and its subdirectories that belong to user Christine. This list is then piped to xargs, which adds each input value to its own rm command. Problems can arise if filenames contain spaces because by default xargs uses both spaces and newlines as item delimiters. The -d "\n" option tells xargs to use only newlines as delimiters, thus avoiding this problem in this context.
+
+Processing Text Using Filters
+Linux providing small tools that can be tied together via pipes and redirection to accomplish more complex tasks, many simple commands to manipulate text are available. These commands accomplish tasks of various types, such as combining files, transforming the data in files, formatting text, displaying text, and summarizing data.
+i) File-Combining Commands
+
+The first text-filtering commands are those used to combine two or more files into one file.
+Three important commands in this category are cat, join, and paste, which join files end to end based on fields in the file or by merging on a line-by-line basis.
+
+a) Combining Files with cat
+
+The cat command’s name is short for concatenate, and this tool does just that: It links together an arbitrary number of files end to end and sends the result to standard output. By combining cat with output redirection, you can quickly combine two files into one:
+
+		$ cat first.txt second.txt > combined.txt
+
+b) Joining Files by Field with join
+The join command combines two files by matching the contents of specified fields within the files. Fields are typically space-separated entries on a line. However, you can specify another character as the field separator with the -t char option, where char is the character you want to use. You can cause join to ignore case when performing comparisons by using the -i option.
+
+Listing 1.1: Demonstration file containing telephone numbers and names
+555-2397 Beckett, Barry
+555-5116 Carter, Gertrude
+555-7929 Jones, Theresa
+555-9871 Orwell, Samuel
+
+Listing 1.2: Demonstration file containing telephone number listing status
+555-2397 unlisted
+555-5116 listed
+555-7929 listed
+555-9871 unlisted
+You can display the contents of both files using join:
+$ join listing1.1.txt listing1.2.txt
+555-2397 Beckett, Barry unlisted
+555-5116 Carter, Gertrude listed
+555-7929 Jones, Theresa listed
+555-9871 Orwell, Samuel unlisted
+
+c) Merging Lines with paste
+
+The paste command merges files line by line, separating the lines from each file with tabs, as shown in the following example, using Listings 1.1 and 1.2 again:
+
+$ paste listing1.1.txt listing1.2.txt
+
+
+555-2397 Beckett, Barry 555-2397 unlisted
+555-5116 Carter, Gertrude 555-5116 listed
+555-7929 Jones, Theresa 555-7929 listed
+555-9871 Orwell, Samuel 555-9871 unlisted
+
+ii) File-Transforming Commands
+
+Many of Linux’s text-manipulation commands are aimed at transforming the contents of files. These commands don’t actually change files contents but instead send the changed files contents to standard output.
+
+
+Converting Tabs to Spaces with expand
+
+Sometimes text files contain tabs but programs that need to process the files don’t cope well
+with tabs. In such a case, you may want to convert tabs to spaces. The expand command does this. By default, expand assumes a tab stop every eight characters. You can change this
+spacing with the -t num or --tabs=num option, where num is the tab spacing value.
+
+b) Displaying Files in Octal with od
+
+It displays a fi le in an unambiguous format—octal (base 8) numbers by default. For instance, consider Listing 1.2 as parsed by od:
+			$ od listing1.2.txt
+
+
+c) Sorting Files with sort
+
+Sometimes we create an output file that you want sorted. The sort command can sort in several
+ways, including the following:
+
+Ignore Case Ordinarily, sort sorts by ASCII value, which differentiates between uppercase and lowercase letters. The -f or --ignore-case option causes sort to ignore case.
+
+Month Sort The -M or --month-sort option causes the program to sort by three-letter month abbreviation (JAN through DEC).
+
+Numeric Sort You can sort by number by using the -n or --numeric-sort option.
+
+Reverse Sort Order The -r or --reverse option sorts in reverse order.
+
+Sort Field By default, sort uses the first field as its sort field. You can specify another field with the -k field or --key=field option.
+$ sort -k 3 listing1.1.txt
+555-2397 Beckett, Barry
+555-5116 Carter, Gertrude
+555-9871 Orwell, Samuel
+555-7929 Jones, Theresa
+
+d) Breaking a File into Pieces with split
+
+The split command can split a file into two or more files. You must also normally specify how large you want the individual files to be:
+
+Split by Bytes The -b size or --bytes=size option breaks the input file into pieces of
+size bytes. This option can have the usually undesirable consequence of splitting the file
+mid-line.
+
+Split by Bytes in Line-Sized Chunks You can break a file into files of no more than a
+specified size without breaking lines across files by using the -C=size or --line-bytes=size
+option. (Lines will still be broken across files if the line length is greater than size.)
+
+Split by Number of Lines The -l lines or --lines=lines option splits the file into
+chunks with no more than the specified number of lines. 
+As an example, consider breaking Listing 1.1 into two parts by number of lines:
+
+$ split -l 2 listing1.1.txt numbers
+
+e) Translating Characters with tr
+
+The tr command changes individual characters from standard input. Its syntax is as follows:
+
+tr [options] SET1 [SET2]
+
+You specify the characters you want replaced in a group (SET1) and the characters with
+which you want them to be replaced as a second group (SET2). Each character in SET1 is
+replaced with the one at the equivalent position in SET2. Here’s an example using Listing 1.1:
+
+$ tr BCJ bc < listing1.1.txt
+
+555-2397 beckett, barry
+555-5116 carter, Gertrude
+555-7929 cones, Theresa
+555-9871 Orwell, Samuel
+
+
+f) Converting Spaces to Tabs with unexpand
+
+The unexpand command is the logical opposite of expand; it converts multiple spaces to
+tabs. This can help compress the size of files that contain many spaces and can be helpful if
+a file is to be processed by a utility that expects tabs in certain locations. Like expand, unexpand accepts the -t num or --tabs=num option, which sets the tab spacing to once every num characters. If you omit this option, unexpand assumes a tab stop every eight characters.
+f) Deleting Duplicate Lines with uniq
+
+The uniq command removes duplicate lines. It’s most likely to be useful if you’ve sorted a file and don’t want duplicate items. For instance, suppose you want to summarize Shakespeare’s vocabulary.
+
+$ sort shakespeare.txt | uniq
+
+be
+is
+not
+or
+question
+that
+the
+to
+
+iii)File-Formatting Commands
+
+The next three commands [fmt, nl, and pr] reformat the text in a file. The first of these
+is designed to reformat text files, such as when a program’s README documentation file uses
+lines that are too long for your display. The nl command numbers the lines of a file, which can be helpful in referring to lines in documentation or correspondence.
+ 
+
+ b) Numbering Lines with nl
+
+$ nl -b a buggy > numbered-buggy.txt
+You can add many options to nl to achieve various special effects:
+
+Body Numbering Style You can set the numbering style for the bulk of the lines with the
+-b style or --body-numbering=style option, where style is a style format code, described
+shortly.
+
+Header and Footer Numbering Style If the text is formatted for printing and has headers or footers, you can set the style for these elements with the -h style or --headernumbering= style option for the header and -f style or --footer-numbering=style option for the footer.
+
+Page Separator Some numbering schemes reset the line numbers for each page. You can tell nl how to identify a new page with the -d=code or --section-delimiter=code option, where code is a code for the character that identifies the new page.
+
+Line-Number Options for New Pages Ordinarily, nl begins numbering each new page with line 1. If you pass the -p or --no-renumber option, though, it doesn’t reset the line number with a new page.
+
+Number Format You can specify the numbering format with the -n format or --numberformat=
+format option, where format is ln (left justified, no leading zeros), rn (right justified, no leading zeros), or rz (right justifi ed with leading zeros). The body, header, and footer options enable you to specify a numbering style for each of these page elements, as described in the following table.
+
+c) Preparing a File for Printing with pr
+
+If you want to print a plain-text file, you may want to prepare it with headers, footers, page breaks, and so on. The pr command was designed to do this. In its most basic form, you pass the command a file:
+
+$ pr myfile.txt
+
+iv) File-Viewing Commands
+Sometimes you just want to view a fi le or part of a fi le. A few commands can help you
+accomplish this goal without loading the fi le into a full-fledged editor.
+
+a) Viewing the Starts of Files with head
+Sometimes all you need to do is see the first few lines of a file. This may be enough to
+identify what a mystery file is, for instance; or you may want to see the first few entries of a
+log file to determine when that file was started.
+
+b) Viewing the Ends of Files with tail
+The tail command works just like head, except that tail displays the last 10 lines of a file.
+
+c) Paging through Files with less
+The idea behind less (and more, for that matter) is to enable you to read a file a screen
+at a time. When you type less filename, the program displays the first few lines of
+Filename
+
+	Example: 			head filename
+				tail filename
+				less filename
+
+v) File-Summarizing Commands
+
+The final text-filtering commands described here are used to summarize text in one way or another. The cut command takes segments of an input fi le and sends them to standard output, while the wc command displays some basic statistics on the file.
+
+Extracting Text with cu
+
+The cut command extracts portions of input lines and displays them on standard output. You can specify what to cut from input lines by byte(s), by Character(s)  or By Field(s) 
+
+b) Obtaining a Word Count with wc
+
+The wc command produces a word count (that’s where it gets its name), as well as line and
+byte counts, for a file:
+                                    
+			$ wc file.txt
+
+Using Regular Expressions
+Many Linux programs employ regular expressions, which are tools for describing or matching patterns in text. Regular expressions are similar in principle to the wildcards that can be used to specify multiple filenames.
+
+Two programs that make heavy use of regular expressions, grep and sed, are also covered. These programs search for text within fi les and permit editing of fi les from the command line, respectively.
+
+
+Understanding Regular Expressions
+Two forms of regular expression are common: basic and extended. Which form you must use depends on the program. Some accept one form or the other, but others can use either type, depending on the options passed to the program. The differences between basic and extended regular expressions are complex and subtle, but the fundamental principles of both are similar.
+
+Understanding Regular Expressions
+The simplest type of regular expression is an alphabetic string, such as Linux or HWaddr. These regular expressions match any string of the same size or longer that contains the regular expression. The real strength of regular expressions comes in the use of non-alphabetic characters, which activate advanced matching rules:
+
+Bracket Expressions Characters enclosed in square brackets ([]) constitute bracket expressions, which match any one character within the brackets. For instance, the regular expression b[aeiou]g matches the words bag, beg, big, bog, and bug.
+Range Expressions A range expression is a variant of a bracket expression. Instead of listing every character that matches, range expressions list the start and end points separated by a dash (-), as in a[2-4]z. This regular expression matches a2z, a3z, and a4z.
+
+Any Single Character The dot (.) represents any single character except a newline. For
+instance, a.z matches a2z, abz, aQz, or any other three-character string that begins with a
+and ends with z.
+
+
+Start and End of Line The carat (^) represents the start of a line, and the dollar sign ($)
+denotes the end of a line.
+
+Repetition Operators A full or partial regular expression may be followed by a special symbol to denote how many times a matching item must exist. Specifically, an asterisk (*) denotes zero or more occurrences, a plus sign (+) matches one or more occurrences, and a question mark (?) specifies zero or one match. The asterisk is often combined with the dot (as in .*) to specify a match with any substring. Multiple Possible Strings The vertical bar (|) separates two possible matches; for instance, car|truck matches either car or truck.
+
+Parentheses Ordinary parentheses (()) surround subexpressions. Parentheses are often
+used to specify how operators are to be applied
+
+Escaping escape it—that is, precede it with a backslash (\).
+
+Using grep
+The grep command is extremely useful. It searches for fi les that contain a specified string and returns the name of the fi le and (if it’s a text fi le) a line of context for that string. The basic grep syntax is as follows:
+
+			grep [options] regexp [files]
+
+The regexp is a regular expression, as just described. The grep command supports a large number of options. Some of the common options enable you to modify the way the program searches files:
+
+Count Matching Lines Instead of displaying context lines, grep displays the number of
+lines that match the specified pattern if you use the -c or --count option.
+
+Specify a Pattern Input File The -f file or --file=file option takes pattern input from
+the specified fi le rather than from the command line.
+
+Ignore Case You can perform a search that isn’t case sensitive, rather than the default
+case-sensitive search, by using the -i or --ignore-case option.
+
+Search Recursively The -r or --recursive option searches in the specified directory and
+all subdirectories rather than simply the specified directory. You can use rgrep rather than
+specify this option.
+Use a Fixed Strings Pattern If you want to turn off the grep command’s use of regular expressions and use basic pattern searching instead, you can use the -F or --fixed-strings option. Alternatively, you can use fgrep rather than grep. Either way, the characters in the basic pattern string are treated literally. For example, $ is treated literally as a $ and not as a regular expression.
+
+Use an Extended Regular Expression The grep command interprets regexp as a basic regular expression by default. To use an extended regular expression, you can pass the -E or --extended-regexp option. Alternatively, you can call egrep rather than grep. This variant command uses extended regular expressions by default.
+
+A simple example of grep uses a regular expression with no special components:
+
+		$ grep -r eth0 /etc/*
+
+This example finds all the fi les in /etc that contain the string eth0 (the identifier for the first wired Ethernet device on most Linux distributions). Because the example includes the -r option, it searches recursively, so fi les in subdirectories of /etc are examined in addition to those in /etc itself.
+
+
+Using sed
+The sed command directly modifies a file’s contents, sending the changed file to standard
+output. Its syntax can take one of two forms:
+sed [options] -f script-file [input-file]
+sed [options] script-text [input-file]
+In either case, input-file is the name of the fi le you want to modify. (Modifications are temporary unless you save them in some way, as illustrated shortly.) The script (script-text or the contents of script-file) is the set of commands you want sed to perform. When you pass a script directly on the command line, the script-text is typically enclosed in single quote marks.
+ 
+$ sed 's/2012/2013/' cal-2012.txt > cal-2013.txt
+
+This command processes the input file, cal-2012.txt, using sed’s s command to replace the first occurrence of 2012 on each line with 2013.
+
+		$ sed 's/2012/2013/' cal-2012.txt > cal-2013.txt
+
+This command processes the input fi le, cal-2012.txt, using sed’s s command to replace the first occurrence of 2012 on each line with 2013. The idea in this example is to convert a fi le created for the year 2012 quickly so that it can be used in 2013
+
+
+
+
+

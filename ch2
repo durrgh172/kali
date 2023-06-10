@@ -1,0 +1,224 @@
+Package Concepts
+
+Linux package management tools are intended to help build and modify and 
+tracking what software is installed. The information that the system maintains
+ helps to avoid problems in several ways:
+
+Packages The most basic information that package systems maintain is information about
+software packages—that is, collections of files that are installed on the computer.
+ Packages are usually distributed as single files that are similar to tarballs or zip files.
+  Once installed, most packages consist of dozens or hundreds of files, and the package system tracks them all.
+Packages include additional information that aids in the subsequent duties of package
+management systems.
+
+Package Concepts
+
+
+Installed File Database Package systems maintain a database of installed files. The database
+includes information about every file installed via the package system, the name of the package
+ to which each of those files belongs, and associated additional information.
+
+Dependencies One of the most important types of information maintained by the package system 
+is dependency information—that is, the requirements of packages for one another.
+
+Checksums The package system maintains checksums and assorted ancillary information
+about files. This information can be used to verify the validity of the installed software.
+
+
+
+
+Upgrades and Uninstallation By tracking files and dependencies, package systems permit easy upgrades and
+ uninstallation: Tell the package system to upgrade or remove a package, and it will replace or remove every file in the package.
+
+Binary Package Creation Both the RPM and Debian package systems provide tools to
+help create binary packages (those that are installed directly) from source code. This feature
+is particularly helpful if you’re running Linux on a peculiar CPU: you can download source
+code and create a binary package, even if the developers didn’t provide explicit support for
+your CPU.
+
+
+
+Using RPM
+
+The most popular package manager in the Linux world is the RedHat Package Manager (RPM). 
+RPM is also available on non-Linux platforms, although it sees less use outside the Linux world. 
+The RPM system provides all of the basic tools described in the preceding section, “Package Concepts,” 
+such as a package database that allows for identifying conflicts and ownership of particular files.
+
+RPM Distributions and Conventions
+
+Red Hat developed RPM for its own distribution. Red Hat released the software under the
+General Public License (GPL), however, so that others are free to use it in their own distributions—
+and this is precisely what has happened.
+
+
+
+
+
+All Linux distributions share many common components, so even those that weren’t 
+originally based on Red Hat are very similar to it in many ways other than their use of RPM packages. 
+
+The convention for naming RPM packages is as follows:
+
+
+	packagename-a.b.c-x.arch.rpm
+
+Package name           version number	     build number	        architecture
+
+
+The rpm Command Set
+
+The main RPM utility program is known as rpm. Use this program to
+ install or upgrade a package at the shell prompt. The rpm command has the following syntax:
+
+rpm [operation][options] [package-files|package-names]
+
+Ex: # rpm -Uvh samba-4.1.9-4.fc20.x86_64.rpm
+
+Verify that the package is installed with the rpm -qi command, which displays information
+such as when and on what computer the binary package was built.
+
+Ex: $ rpm -qi samba
+
+
+
+Extracting Data from RPMs
+
+RPM files are actually modified cpio archives. Thus, converting the files into cpio files is relatively straightforward, whereupon you can use cpio to retrieve the individual files. To do this job, you need to use the rpm2cpio program that ships with most Linux distributions. This program takes a single argument—the name of the RPM file—and outputs the cpio archive on standard output. Thus, if you want to create a cpio archive file, you must redirect the output:
+
+$ rpm2cpio samba-4.1.9-4.fc20.src.rpm > samba-4.1.9-4.fc20.src.cpio
+
+
+You can then extract the data using cpio, which takes the -i option to extract an archive and --make-directories to create directories:
+
+$ cpio -i --make-directories < samba-4.1.9-4.fc20.src.cpio
+
+
+Using Yum
+
+Yum as mentioned earlier, is one of several meta-packagers—it enables you to install a package and all its dependencies easily using a single command line.
+
+When using Yum, you don’t even need to locate and download the package files because
+Yum does this for you by searching in one or more repositories—Internet sites that host RPM files for a particular distribution.
+
+Yum originated with the fairly obscure Yellow Dog Linux distribution, but it’s since been adopted by Red Hat, CentOS, Fedora, and some other RPM-based distributions.
+
+Yum isn’t used by all RPM-based distributions, though; SUSE and Mandriva, to name just two, each uses their own meta-packager. Debian-based distributions generally employ the Advanced Package Tools (APT), as described later in “Using apt-get.” Nonetheless, because of the popularity of Red Hat, CentOS, and Fedora, knowing Yum can be valuable. 
+
+
+Using Yum
+
+The most basic way to use Yum is with the yum command, which has the following syntax:
+
+yum [options] [command] [package...]
+
+Which options are available depend on the command you use.
+
+If you prefer to use GUI tools rather than command-line tools, you should be aware that
+GUI front-ends to yum exist. Examples include yumex and kyum. You can use the text-mode
+yum to install these front-ends, as in 		
+
+yum install kyum
+
+
+RPM and Yum Configuration Files
+
+Ordinarily, you needn’t explicitly configure RPM or Yum; distributions that use RPM configure it in reasonable ways by default. Sometimes, though, you may want to tweak a few details, particularly if you routinely build source RPM packages and want to optimize the output for your computer. You may also want to add a Yum repository for some unusual software you run. To do so, you typically edit an RPM or Yum configuration file.
+
+The main RPM configuration file is /usr/lib/rpm/rpmrc. This file sets a variety of options, mostly related to the CPU optimizations used when compiling source packages. 
+
+
+
+RPM Compared to Other Package Formats
+
+RPM is a very flexible package management system. In most respects, it’s comparable to
+Debian’s package manager, and it offers many more features than tarballs. When compared
+to Debian packages, the greatest strength of RPMs is probably their ubiquity. Many software
+packages are available in RPM form from their developers and/or from distribution maintainers.
+
+The fact that there are so many RPM-based distributions can be a boon. You may be able to use an RPM intended for one distribution on another, although, as noted earlier, this isn’t certain.
+
+Compared to tarballs, RPMs offer much more sophisticated package management tools. This can be important when you’re upgrading or removing packages and also for verifying the integrity of installed packages.
+
+Using Debian Packages
+
+In their overall features, Debian packages are similar to RPMs, but the details of operation for each differ, and Debian packages are used on different distributions than are RPMs. Because each system uses its own database format, RPMs and Debian packages aren’t interchangeable
+without converting formats. Using Debian packages requires knowing how to use the dpkg, dselect, and apt-get commands. A few other commands can also be helpful.
+
+Debian Distributions and Conventions
+
+As the name implies, Debian packages originated with the Debian distribution. Since that time, the format has been adopted by several other distributions, including Ubuntu, Linux Mint, and Xandros. Such distributions are derived from the original Debian, which means that packages from the original Debian are likely to work well on other Debian-based systems.
+
+Like RPM, the Debian package format is neutral with respect to both OS and CPU  type. Debian packages are extremely rare outside Linux, although attempts to use various systems that used the Debian package system and software library atop non-Linux kernels have been made, and largely abandoned, with the exception of kFreeBSD
+
+
+
+The dpkg Command Set
+
+Debian packages are incompatible with RPM packages, but the basic principles of operation
+are the same across both package types. Like RPMs, Debian packages include dependency
+information, and the Debian package utilities maintain a database of installed packages, files, and so on. You use the dpkg command to install a Debian package. This command’s syntax is similar to that of rpm:
+
+dpkg [options][action] [package-files|package-name]
+
+As an example, consider the following command, which installs the samba_4.1.6+dfsg-
+1ubuntu2.1404.3_amd64.deb package:
+
+# dpkg -i samba_4.1.6+dfsg-1ubuntu2.1404.3_amd64.deb
+
+
+The dpkg Command Set
+
+If you’re upgrading a package, you may need to remove an old package before installing
+the new one. To do this, use the -r option to dpkg, as in the following:
+
+# dpkg -r samba
+
+To find information about an installed package, use the -p parameter to dpkg, as shown in Listing 2.2. This listing omits an extended English description of what the package does.
+Listing 2.2: dpkg package information query output
+
+$ dpkg -p samba
+
+
+
+Using apt-cache
+
+The APT suite of tools includes a program, apt-cache, that’s intended solely to provide
+information about the Debian package database. You may be interested in using several features of this tool:
+
+Display Package Information Using the showpkg subcommand, as in apt-cache showpkg
+samba, displays information about the package. The information displayed is different from
+that returned by dpkg’s informational actions.
+
+Display Package Statistics You can learn how many packages you’ve installed, how many
+dependencies are recorded, and various other statistics about the package database by passing
+the stats subcommand, as in apt-cache stats.
+
+
+
+Using apt-cache
+
+
+Find Unmet Dependencies If a program is reporting missing libraries or files, typing
+apt-cache unmet may help; this function of apt-cache returns information about unmet
+dependencies, which may help you track down the source of missing-fi le problems.
+
+Display Dependencies Using the depends subcommand, as in apt-cache depends samba, shows all of the specified package’s dependencies. This information can be helpful in tracking down dependency-related problems. The rdepends subcommand finds reverse
+dependencies—packages that depend on the one you specify.
+
+Locate All Packages The pkgnames subcommand displays the names of all the packages
+installed on the system. If you include a second parameter, as in apt-cache pkgnames sa, the program returns only those packages that begin with the specified string.
+
+Using apt-get
+
+APT, with its apt-get utility, is Debian’s equivalent to Yum on certain RPM-based distributions.
+This meta-packaging tool lets you perform easy upgrades of packages, especially if you have a fast Internet connection. Debian-based systems include a file, /etc/apt/sources.list, that specifies locations from which important packages can be obtained.
+
+The apt-get utility works by obtaining information about available packages from the sources listed in /etc/apt/sources.list and then using that information to upgrade or install packages. The syntax is similar to that of dpkg:
+
+apt-get [options][command] [package-names]
+
+In most cases, you won’t use any options with apt-get—just a single command and possibly one or more package names. One particularly common use of this utility is to keep your system up-to-date with any new packages. The following two commands will accomplish this goal if /etc/apt/sources.list includes pointers to up-to-date fi le archive sites:
+
+		# apt-get update
+		# apt-get dist-upgrade

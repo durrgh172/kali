@@ -1,0 +1,475 @@
+Managing the Shell Environment
+
+Chapter 1 introduced Linux shell use, including topics such as command completion, history, redirection, and the basics of environment variables. Now it’s time to go further with more details about environment variables, aliases, and configuration files. Using this information, you’ll be able to customize your shell environment to suit your personal tastes or change the default environment for all of the users on your system.
+
+Reviewing Environment Variables
+
+Environment variables provide the means to pass named data (variables) to programs launched from a shell or a subshell. A subshell is a child process that is created by either the shell or a shell script when a program is initiated. Shells themselves also rely on environment variables. For instance, $HOSTNAME conventionally holds the computer’s name, such as carson.example.com. A program that needs to know the computer’s name can refer to $HOSTNAME to obtain this information.
+
+You set an environment variable manually via an equal-sign assignment operator. To make the variable available to subshells, you then use the export command:
+$ HOSTNAME=carson.example.com
+$ export HOSTNAME
+Using the semicolon (;) list operator, you can combine these two commands into one line as follows:
+$ HOSTNAME=carson.example.com ; export HOSTNAME
+You can further combine these two commands into one command for even more brevity:
+$ export HOSTNAME=carson.example.com
+On a bash command line, you can refer to an environment variable by using the echo command to examine a single variable (as in echo $HOSTNAME). 
+
+Understanding Common Environment Variables
+
+You may encounter many common environment variables on your system. You can find out how environment variables are configured by typing env, set, or printenv without any options. When typed without options, env returns all of the environment
+variables that are currently set in a format similar to that of bash environment variable assignments:
+
+$ env | grep HOSTNAME
+
+HOSTNAME=carson.example.com
+
+
+Using Aliases
+
+Most Linux shells, including bash, support command aliases, which are new names that you can give to regular commands. Typically, you’ll use aliases as follows:
+
+■ To assign easier-to-remember names to obscure commands
+■ To implement desirable command options as a command’s default
+■ To create a shortened version of a command to minimize typing
+
+You can define aliases at any bash prompt, but that won’t make them persistent. To make aliases persistent, you need to include them in your bash startup scripts, as described in the section “Modifying Shell Configuration Files.” To implement an alias, you use the following syntax:
+
+alias alias_name='command‘
+
+The alias_name parameter is what you want to type at the command prompt, and the shell substitutes command for whatever you type. As an example, consider the ls command, which lists the contents of a directory. A popular option combination for this command is -alF, which shows a long listing display of a directory’s contents along with hidden files and file types. If you want to use this option as the default, you can use the alias command:
+
+$ alias ls='ls -alF'
+
+
+In this example, ls becomes an alias for an extended version of itself. After you type this alias command, typing ls will work as if you’d typed ls -alF. If you want to see if a particular command has an alias set, you can also use the alias command as follows:
+$ alias ls
+alias ls='ls -alF'
+
+To remove an alias setting, use the unalias command:
+
+$ unalias ls
+$ alias ls
+-bash: alias: ls: not found
+
+
+You can use an alias name that’s unrelated to the original command name. For instance, suppose you want to type bye instead of logout to terminate a text-mode login session. You can do so with alias:
+
+$ alias bye='logout'
+
+
+Modifying Shell Configuration Files
+
+Configuring shells requires editing shell configuration files. These files can be classified in a couple of ways. First, files may be global files that affect all users of a shell or local files that affect just one user. Second, files may be login files that are launched only by a login process (such as a text-mode console login) or non-login files that are launched by other processes (such as when starting a terminal emulator window in the GUI). The result is a 2 × 2 matrix of configuration files, as shown below in Table.
+
+Modifying Shell Configuration Files
+
+Precisely which of these files are used differs from one distribution to another. No matter the name, though, these files are shell scripts. Global configuration files affect all users of a system. However, their settings may be overridden by individual users, either in user configuration files or in commands the users type themselves. The /etc/skel directory holds files that are copied to individual users’ home directories when their accounts are created. These files are sometimes called skeleton files. Typically, this set of files includes local bash startup files.
+
+Just as shells have startup scripts, they may also have logout scripts—scripts that run when the user logs out. For bash, this script is ~/.bash_logout. The logout script might execute programs to clean up temporary directories, remove security keys from memory, clear the screen, or perform other tasks that are appropriate when a user logs out.
+
+Writing Scripts
+
+You’ll do much of your work on a Linux system by typing commands at a shell prompt. As you use Linux, though, you’re likely to find some of these tasks to be repetitive. If you need to add 100 new users to the system, for instance, typing useradd 100 times can be tedious. Fortunately, Linux includes a way to cut through the tedium: shell scripts. These are simple programs written in an interpreted computer language that’s embedded in the Linux shell you use to type commands.
+
+Many Linux system startup scripts are in fact shell scripts. Therefore, understanding shell scripting is necessary if you want to modify a Linux startup script. Most Linux systems use bash by default, so shell scripts are often written in the bash shell scripting language, but dash and other shell scripting languages are similar. You’re not restricted to running shell scripts written in your default shell. A shell script’s first line identifies the shell that should be used to run the script.
+
+
+
+Beginning a Shell Script
+
+Shell scripts are plain-text files, so you can create them in text editors. A shell script begins with a line that identifies the shell that’s used to run it, such as the following:
+
+#!/bin/bash
+
+The first two characters are a special code that tells the Linux kernel that this is a script. The rest of the first line indicates the program that’s to interpret the script. Notice that the program’s absolute pathname is included. The /bin/bash shell will be interpreting the script’s contents because it is listed in the first line. This line is sometimes called the shebang, hashbang, hashpling, or pound bang line.
+
+After the first line, shell scripting languages consider a hash mark (#) as a comment character. This allows you to embed comments within your scripts because the script utility ignores characters on a script line after the hash mark.
+
+
+
+Using Commands in Shell Scripts
+
+One of the most basic features of shell scripts is the ability to run commands to perform various tasks for you. You may use both the shell’s internal and external commands by including their names in the script. You can also specify command parameters in a script. For example, suppose that you like to view the date and time in a format different than the default format displayed by the date command. However, you have a difficult time remembering all of the syntax required and don’t want to use an alias. A simple shell script can remember the syntax for you as shown here:
+
+$ date +%A', '%B' '%e' '%I':'%M%p
+Thursday, October 23 01:50PM
+$
+$ cat mydate.sh
+
+Notice the date command’s complicated syntax used on the command line to produce a specially formatted display. The same command is listed in the mydate.sh script. There is no need to commit this date command syntax to memory because the shell script will produce the desired results for you!
+These are the most common formatting characters for the date command:
+%D – Display date as mm/dd/yy
+%Y – Year (e.g., 2020)
+%m – Month (01-12)
+%B – Long month name (e.g., November)
+%b – Short month name (e.g., Nov)
+%d – Day of month (e.g., 01)
+%j – Day of year (001-366)
+%u – Day of week (1-7)
+%A – Full weekday name (e.g., Friday)
+%a – Short weekday name (e.g., Fri)
+%H – Hour (00-23)
+%I – Hour (01-12)
+%M – Minute (00-59)
+%S – Second (00-60)
+
+
+A comprehensive script command list is impossible because you can run any installed program as a command in a script. A few commands that are commonly used in scripts are included in the following list:
+
+■ File manipulation commands, such as ls, mv, cp, and rm. You can use these commands to help automate repetitive file maintenance tasks.
+
+■ The grep command locates files that contain specific strings. 
+
+■ The find command searches for file and directory names based on filenames, ownership, and similar characteristics.
+
+■ The cut command extracts text from fields in a file. 
+
+■ The sed program provides many of the capabilities of a conventional text editor but via commands that can be typed at a command prompt or entered in a script.
+
+■ The echo command provides the ability to send a message to the script’s user. You can pass various options to echo or just a string to be shown to the user. 
+
+
+Running a Shell Script
+
+When you’re done writing the shell script, you can modify it so that it’s executable. You do this with the chmod command, use the +x option to add execute permissions, along with the indicator for who needs access. For instance, to make a file called my-script.sh executable for your use only, you issue the following command:
+
+$ chmod u+x my-script.sh
+
+You can run shell scripts by using several different methods. Some methods create subshells, while others do not. Some methods require execute permission, while others do not require it. To demonstrate the differences between these techniques, the following script will be run using the various methods:
+
+$ cat my-script.sh
+#!/bin/bash
+#
+### Show process "forest"
+ps -o pid -o ppid -o cmd --forest
+#
+### Give status
+
+$ ls -l my-script.sh
+-rw-rw-r--. 1 Christine User 116 Oct 23 11:28 my-script.sh
+$
+The my-script.sh uses the ps command with some special options. The -o options will display the process ID (PID) number and the parent process ID (PPID) number, along with the commands (CMD) being executed. The --forest option shows parent processes graphically. Notice that the my-script.sh fi le has no execute permissions set on it.
+
+The following list describes the various script execution methods: bash script-name Typing the script’s name, preceded by bash, tells Linux to run the script in the current directory rather than searching the current path:
+$ bash my-script.sh
+PID PPID CMD
+2821 2820 -bash
+2867 2821 \_ bash my-script.sh
+2868 2867 \_ ps -o pid -o ppid -o cmd --forest
+
+./script-name Typing the script’s name, preceded by ./, tells Linux to run the script in the current directory rather than searching the current path:
+
+$ ./my-script.sh
+-bash: ./my-script.sh: Permission denied
+
+$ chmod u+x my-script.sh
+$ ./my-script.sh
+
+$ chmod u+x /home/Christine/NewDir/my-script.sh
+$ /home/Christine/NewDir/my-script.sh
+
+Two parameters are now passed to the script, Malcolm and Inara. The mkuser.sh script handles them both via positional parameters. The script uses $1 as a variable to handle the
+Malcolm parameter and $2 as a variable to handle the Inara parameter.
+
+Understanding User-Defined Variables
+
+A user-defined variable is a variable defined by a user for various purposes, such as temporarily storing data. It can be used within a script or at the command line. The following example demonstrates defining a user-defined variable, called My_Var, at the command line:
+$ My_Var="Hello World"
+$ echo $My_Var
+Hello World
+You can remove both environment and user-defi ned variables. The unset command accomplishes this task, as shown in the example here:
+
+$ echo $My_Var
+Hello World
+
+$ unset My_Var
+$ echo $My_Var
+
+Another modification was to create a user-defined variable, Username, and set it to the $1 parameter’s value. Here is the mkuser.sh after it was modified:
+$ cat mkuser.sh
+#!/bin/bash
+# Create user accounts & their passwords
+# Set variables ### 
+Username=$1
+echo Account for $Username is being created...
+useradd $Username
+# Set user account password ###
+echo Password for $Username is being set...
+passwd $Username
+# Display account record ###
+User_Record=$(grep $Username /etc/passwd)
+echo Here is $Username\'s record\:
+echo $User_Record
+echo Account is ready for use.
+
+
+For instance, instead of reading the username from the command line, the mkuser.sh script may be modified to prompt the user for the username. Here are the first few lines of the modified mkuser.sh script:
+		       $ cat mkuser.sh
+#!/bin/bash
+## Create user accounts & their passwords
+#########################################
+# Obtain variable value ###
+echo
+echo -e "Please enter username for account: \c"
+read Username
+echo Account for $Username is being created...
+useradd $Username
+# Set user account password ###
+echo Password for $Username is being set...
+passwd $Username
+# Display account record ###
+User_Record=$(grep $Username /etc/passwd)
+echo Here is $Username\'s record\:
+echo $User_Record
+echo Account is ready for use.
+$ sudo ./mkuser.sh
+[sudo] password for Christine:
+Please enter username for account: Kaylee
+Account for Kaylee is being created...
+[...]
+Here is Kaylee's record:
+Kaylee:x:510:513::/home/Kaylee:/bin/bash
+Account is ready for use.
+$
+
+Using Conditional Expressions
+Scripting languages support several types of conditional expressions. These expressions enable a script to perform one of several actions contingent upon some condition—typically the value of a variable. One common command that uses conditional  expressions is the if-then statement. The different forms of this statement and its syntax is as follows:
+
+if [condition]		
+then
+commands
+fi
+
+The condition represented by [ condition ] is more commonly known as the test condition, and it replaces the test command in comparison syntax. Both the test condition and the test command can evaluate three condition types:
+
+■ Numeric comparisons
+■ String comparisons and tests
+■ File comparisons and tests
+
+Each comparison uses its own comparison syntax. For example, to test if two numbers are equal, the number comparison uses the -eq comparison syntax. To test if two strings are equivalent, the string comparison uses the = comparison syntax.
+
+Using Loops
+
+Conditional expressions are sometimes used in loops. Loops are structures that tell the script to perform the same task repeatedly until some condition is met (or until some condition is no longer met). The performed task is typically a command or series of
+commands. There are three primary loop types that you can use in a shell script. Two of the loop types are based on a test condition, while the other loop type executes its task(s) for a certain number of list items. The loop types and their conditions are as follows:
+
+■ while condition tests true
+■ until condition tests true
+■ for items in list
+
+Looking at while loops
+
+The while loop’s commands execute while its test condition 
+returns a true. The basic form of this loop type goes like this:
+
+while [ condition ]
+do
+commands
+done
+
+Looking at until loops
+
+An until loop takes a slightly different approach. An until loop’s commands execute until its test condition returns a true. The basic form of this loop type is as follows:
+
+until [ condition ]
+do
+commands
+done
+
+Looking at for loops
+
+A for loop is rather different in its operation compared to while and until loops. The for loop does not test any conditions, but instead executes its commands for a certain number of list items. The basic syntax of the for loop is as follows:
+
+for variable in list 
+do
+commands
+Done
+
+When the for loop starts, variable (variable) is assigned the first item in the list’s (list) value. The commands in the do/done construct are executed one time. The variable is then assigned the second list item’s value, and the commands in the do/done construct are executed one time again. This continues until each list item’s value has been assigned to the variable.
+
+The seq command is another handy command to use with the for loop. It’s great if you need a large amount of numbers in your list. Instead of typing in all the numbers, you can use the seq command. Its basic syntax is as follows:
+
+		seq BeginningNumber IncrementAmount EndingNumber
+
+You don’t have to include all of the parameters in the command. By default, BeginningNumber is assumed to be one (1), and the IncrementAmmount defaults to one (1).
+
+Using Lists
+
+You can chain together commands using various list operators. This is called a list or a list of commands. You can use the following operators:
+
+■ Semicolon (;)
+■ Ampersand (&)
+■ Double ampersand (&&)
+■ Double vertical line or pipe (||)
+
+You have already seen a few command list examples, such as this one used near the chapter’s beginning:
+
+$ HOSTNAME=carson.example.com ; export HOSTNAME
+
+In the previous example, both the HOSTNAME variable setting and the export command are executed, but sequentially. In other words, when the HOSTNAME variable setting completes, then the export command executes. Another example that has output better demonstrates this order:
+
+$ date ; pwd
+Tue Oct 28 14:09:38 EDT 2015
+/home/Christine
+$
+
+$ date & pwd
+[1] 3276
+/home/Christine
+$ Tue Oct 28 14:20:28 EDT 2014
+
+
+Using Functions
+
+A function is a part of a script that performs a specific subtask and can be called by name from other parts of the script. Functions are defined by placing a set of parentheses () after the function name and enclosing the lines that make up the function within curly braces {}:
+function_name() {
+commands
+}
+
+Functions are very useful in helping to create modular scripts. Going back to the mkuser.sh script, we can put together a function that can be used throughout the script:
+# Function Declarations ###
+#
+err_function() {
+echo "An error has occurred!"
+echo "Exiting script immediately..."
+exit
+}
+
+This new function will help with the useradd command list. The original list looked like this:
+			useradd $Username || break
+
+With the declared err_function function, the command list can look like the following:
+			useradd $Username || err_function
+If the useradd command does not complete successfully, the err_function will be called. This allows for a great deal more 
+flexibility in a shell script.
+
+Running Jobs in the Future
+
+Some system maintenance tasks should be performed at regular intervals and are highly automated. For instance, creating backups (archives) is often an automated task, which is repeated at least daily. Linux provides a means of scheduling tasks to run at specified times. This tool is the cron program, which runs what are known as cron jobs. A related tool is at, which enables you to run a command on a one-time basis at a specified point in the future, as opposed to doing so on a regular basis as cron does.
+
+Understanding the Role of cron
+
+The cron program is a daemon, so it runs continuously, looking for events that cause it to spring into action. Unlike most daemons, which are network servers, cron responds to temporal events. Specifically, it “wakes up” once a minute, examines configuration 
+Files in the /var/spool/cron/ and /etc/cron.d/ directories and the /etc/crontab file, and executes commands specified by these configuration files if the time matches the time listed in the files.
+
+There are two types of cron jobs: system cron jobs and user cron jobs. System cron jobs are run as root and perform system-wide maintenance tasks. By default, most Linux distributions include system cron jobs that clean out old files from /tmp, perform log rotation (as described earlier, in “Rotating Log Files”), and so on. Ordinary users can create user cron jobs, which might run some user programs on a regular basis. You can also create a user cron job as root. This might be handy if you need to perform some  task at a different time than is supported by the system cron jobs, which are rigidly scheduled.
+
+Creating System cron Jobs
+
+The /etc/crontab file controls system cron jobs. This file normally begins with several lines that set environment variables, such as  PATH (sets the path) and $MAILTO (sets the address to which programs’ output is mailed). The file then contains several lines that
+resemble the following:
+
+02 4 * * * root run-parts /etc/cron.daily
+
+This system crontab record begins with five fields that specify the time to run the indicated job:
+
+	The minute of the hour (0–59)		The hour of the day (0–23)		The day of the month (1–31)
+	The month of the year (1–12)		The day of the week (0–7)
+
+For the day of the week, both 0 and 7 correspond to Sunday. For both the month of the year and the day of the week values, you can use the first three letters of the name rather than a number if you prefer. The hour of the day is listed in military time. For example, to indicate that a job is to run at 1:00 p.m., you would list 13 for that field.
+
+Creating System cron Jobs
+
+
+In all cases, you can specify multiple field values in several ways:
+
+■ An asterisk (*) matches all possible values.
+■ A list separated by commas (such as 0,6,12,18) matches any of the specified values.
+■ Two values separated by a dash (-) indicate a range, inclusive of the end points. For instance, 9-17 in the hour field specifies a time of from 9:00 a.m. to 5:00 p.m.
+■ A slash, when used in conjunction with some other multi-value option, specifies stepped values. A stepped value is a range in which some members are skipped. For instance, */10 in the minute field indicates a job that’s run every 10 minutes.
+
+Creating User cron Jobs
+
+To create a user cron job, you use the crontab utility, not to be confused with the /etc/crontab configuration file. The syntax for crontab is as follows:
+
+	crontab [-u user] [-l | -e | -r] [file]
+
+If given without the -u user parameter, crontab modifies the cron job file (sometimes called the user crontab) associated with the current user.
+
+If you want to work directly on a user crontab file, use the following crontab utility options:
+
+-l causes the crontab utility to display the current user crontab file.
+-r removes the current user crontab file.
+-e opens an editor so that you can edit the current user crontab file.
+Alternatively, you can create a cron job configuration file and pass the filename to crontab using the file parameter. For instance, 
+
+crontab -u tbaker my-cron 
+
+causes the crontab program to use my-cron for tbaker’s cron jobs. In other words, it copies tbaker’s my-cron file into the directory in which it stores user cron jobs, making a few minor changes along the way.
+
+Whether you create a user crontab file and submit it via the file parameter or edit it via -e, the format of the user crontab file is similar to that described earlier. You can set environment variables by using the form VARIABLE=value. You also can specify a command preceded by five numbers or wildcards to indicate when the job is to run. In a user crontab, you do not specify the username used to execute the job, as you do with system cron jobs. That information is derived from the crontab file’s owner.
+Following is shows a sample user crontab file. This file runs two programs at different intervals. The fetch mail program runs every 30 minutes (on the hour and half hour), and clean a double runs on Mondays at 2:00 a.m. Both programs are specified via complete paths, but you can include a PATH environment variable and omit the complete path specifications.
+
+A sample user crontab file
+SHELL=/bin/bash
+MAILTO=tbaker
+HOME=/home/tbaker
+Running Jobs in the Future 393
+0,30 * * * * /usr/bin/fetchmail -s
+0 2 * * mon /usr/local/bin/clean-adouble $HOME
+
+Ultimately, user crontab files are stored in one of the following directories:
+/var/spool/cron/
+/var/spool/cron/tabs/
+/var/spool/cron/crontabs/
+
+Access to the cron facility may be restricted in several ways:
+
+Executable Permissions The permissions on the cron and crontab programs may be restricted using standard Linux permissions mechanisms. For those that do, users who need to schedule jobs using cron should be added to the appropriate group. This group is often called cron. However, you should check the group owner and permissions on the /usr/sbin/cron and /usr/bin/crontab program files to be sure.
+
+Allowed Users List The /etc/cron.allow file contains a list of users who should be permitted access to cron. If this file is present, only users whose names appear in the file may use cron. All other users are denied access. If this file isn’t present, anybody may
+use cron, assuming access isn’t restricted by executable permissions or a dis-allowed users list.
+
+Disallowed-Users List The /etc/cron.deny file contains a list of users who should be denied access to cron. If this fi le is present, any user whose name appears in the file is denied access to cron. Users not listed may use cron, assuming executable permissions and the allowed-users list don’t restrict access.
+
+Using anacron
+
+The cron utility is a great tool for performing certain tasks (such as rotating log files) on systems that are up most or all of the time. It’s a much less useful tool on systems that are regularly shut down, such as laptop or tablet computers. Frequently, late-night cron jobs are never executed on such systems, which can lead to bloated log files, cluttered /tmp directories, and other problems.
+
+One solution to such problems is the anacron utility. This program is designed as a supplement to cron to ensure that regular maintenance jobs are executed at reasonable intervals. The anacron utility works by keeping a record of programs that it should execute and how frequently it should do so. The frequency is set by number of days. Whenever anacron runs, it checks to see when it last executed each program that it’s configured to manage. If a period greater than the program’s execution interval has passed, anacron runs the program. Typically, anacron itself is run from a system startup script, and perhaps from a cron job. You can then reconfigure your regular system cron jobs as anacron jobs and be sure they’ll execute even on systems that are regularly shut down for long stretches of time.
+
+The job definition record contains four fields:		period delay identifier command
+
+*The first field, period, is how frequently, in days, the command should be run. 
+
+*The second field, delay, is a delay period, in minutes, between the time anacron starts and the time the command is run, if it should be run. 
+
+*The third field, identifier, is a string that identifies the command. Its purpose is to identify the job in messages, log files, and for special execution. 
+
+*Finally, the fourth field, command, is the command to be run. This is a single command or script name, optionally followed by any parameters that it may take.
+
+Following is shows a sample /etc/anacrontab file. This fi le sets a couple of environment variables. The PATH environment variable is particularly important if any scripts call programs without specifying their complete paths.
+
+Sample /etc/anacrontab file
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+# format: period delay job-identifier command
+1 5 cron.daily run-parts /etc/cron.daily
+7 10 cron.weekly run-parts /etc/cron.weekly
+30 15 cron.monthly run-parts /etc/cron.monthly
+
+the anacron utility must be called itself. This is typically done in one of two ways:
+
+Via a Startup Script You can create a startup script to run anacron. For example, a simple SysV startup script (see Chapter 5) that takes no options but runs anacron should do the job.
+
+Via a cron Job You can create a cron job to run anacron. Typically, this call will replace your regular system cron job entries (in /etc/crontab), and you’ll probably want to call anacron on a daily basis or more frequently.
+
+Using at
+
+Sometimes cron and anacron are overkill. You may simply want to run a single command only once at a specific future time. For this task, Linux provides another command: at. In ordinary use, this command only needs a single option: a time to run. This time can take any of several forms:
+
+Time of Day You can specify the time of day as HH:MM, optionally followed by AM or PM if you use a 12-hour format. If the specified time has already passed, the operation is scheduled for the next occurrence of that time—that is, for the next day.
+
+Time Keywords The keywords noon, midnight, or teatime stand for what you’d expect (teatime is 4:00 p.m.).
+
+Day Specification To schedule an at job more than 24 hours in advance, you must add a date specification after the time-of-day specification. This can be done in numeric form, using the format MMDDYY, MM/DD/YY, or DD.MM.YY. Alternatively, you can specify the date as month-name day or month-name day year.
+
+An example of entering a single command interactively into the at utility:
+
+$ at now +1 hour
+at> ip -s link
+at> <EOT>
+job 1 at 2015-10-14 11:28
+$
+at -f commands.sh noonS
